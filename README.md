@@ -1,15 +1,13 @@
 USTH ICT 2018 Distributed Systems
 =====================================
 
-Groups are expected to:
-
-* Fork this repository to your github account
-* Update student names and IDs to this README file
-* Push your commits regularly, with proper commit messages
-
 Group Info
 =======================
 
-* Name 1 (ID1)
-* Name 2 (ID2)
+* Hoang Duc Minh - USTHBI6-096
+* Luong Hung Son - USTHBI6-126
+* Le Tan Nhat Linh - USTHBI6-080
+* Nguyen Vu Hung - USTHBI6-061
+* Truong Hai Long - USTHBI6-089
+
 
