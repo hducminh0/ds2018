@@ -8,9 +8,13 @@
 
 int main() {
     int ss, cli, pid;
+    int state = 0;       
     struct sockaddr_in ad;
     char s[100];
     socklen_t ad_length = sizeof(ad);
+    FILE *pfile;
+    char *buffer;
+    long filelen;
 
     // create the socket
     ss = socket(AF_INET, SOCK_STREAM, 0);
@@ -35,18 +39,42 @@ int main() {
             printf("client connected\n");
             while (1) {
                 // it's client turn to chat, I wait and read message from client
-                read(cli, s, sizeof(s));
-                printf("client says: %s\n",s);
+               if (state % 2 == 0)
+                {
+                    read(cli, s, sizeof(s));
+                    // printf("client says: %s\n",s);
+                    filelen = atol(s);
+                    printf("%lu\n", filelen);
+                }
+                else
+                {
+                    // create buffer to receive file
+                    buffer = (char *)malloc((filelen + 1) * sizeof(char));
+                    // printf("buffer: %lu\n", sizeof(buffer));
+                    read(cli, buffer, filelen);
+                    pfile = fopen("received.png", "wb");
+                    while (filelen > 0)
+                    {
+                        // printf("%ld\n", filelen);
+                        int written = fwrite(buffer, 1, filelen, pfile);
+                        if (written < 1)
+                        {
+                            printf("Can't write to file");
+                            return -1;
+                        }
 
-                // now it's my (server) turn
-                printf("server %s\n", s);
-                scanf("%s", s);
-                write(cli, s, strlen(s) + 1);
+                        buffer += written;
+                        filelen -= written;
+                    }
+                    fclose(pfile);
+                    printf("Done");
+                    getchar();
+                }
+                state++;
             }
             return 0;
         }
-        else 
-        {
+        else {
             // I'm the father, continue the loop to accept more clients
             continue;
         }

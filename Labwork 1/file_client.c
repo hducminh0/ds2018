@@ -7,9 +7,12 @@
 #include <netdb.h>
 
 int main(int argc, char* argv[]) {
-    int so;
+    int so, state = 0;
     char s[100];
     struct sockaddr_in ad;
+    FILE *pfile;
+    char *buffer, str_filelen[1000000];
+    long filelen;
 
     socklen_t ad_length = sizeof(ad);
     struct hostent *hep;
@@ -29,16 +32,28 @@ int main(int argc, char* argv[]) {
 
     while (1) {
         // after connected, it's client turn to chat
-
-        // send some data to server
-        printf("client>");
-        scanf("%s", s);
-        write(serv, s, strlen(s) + 1);
-
-        // then it's server turn
-        read(serv, s, sizeof(s));
-
-        printf("server says: %s\n", s);
+        if (state % 2 == 0)
+        {
+            printf("client>");
+            scanf("%s", s);
+            pfile = fopen(s, "rb");         // open file 
+            fseek(pfile, 0, SEEK_END);      // go to the end of the file
+            filelen = ftell(pfile);         // length of the file
+            rewind(pfile);          // set the pointer back to the start of the file 
+            sprintf(str_filelen, "%ld", filelen);      // turn filelen into string to put into buffer
+            // printf("%ld\n", filelen);
+            write(serv, str_filelen, strlen(str_filelen) + 1); 
+        }
+        else
+        {
+            // create buffer to send file 
+            buffer = (char *)malloc((filelen + 1) * sizeof(char));       // create a buffer to 
+            // printf("buffer: %lu\n", sizeof(buffer));
+            fread(buffer, filelen, 1, pfile);
+            fclose (pfile);
+            write(serv, buffer, filelen + 1);
+        }
+        state++;
     }
 }
 
