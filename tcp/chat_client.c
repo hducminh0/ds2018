@@ -1,4 +1,4 @@
-
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,7 +7,7 @@
 #include <netdb.h>
 
 int main(int argc, char* argv[]) {
-    int so;
+    int so,pid;
     char s[100];
     struct sockaddr_in ad;
 
@@ -26,19 +26,21 @@ int main(int argc, char* argv[]) {
 
     // connect to server
     connect(serv, (struct sockaddr *)&ad, ad_length);
-
+    // after connected, make client thread to receive mess from server
+    pid = fork();
+    if (pid == 0)
+    {   
+        while(1){
+            read(serv, s, sizeof(s));
+            printf("server says: %s\n", s);
+        }
+        return 0;
+    }
     while (1) {
-        // after connected, it's client turn to chat
-
         // send some data to server
-        printf("client>");
         scanf("%s", s);
         write(serv, s, strlen(s) + 1);
-
-        // then it's server turn
-        read(serv, s, sizeof(s));
-
-        printf("server says: %s\n", s);
     }
+    return 0;
 }
 
