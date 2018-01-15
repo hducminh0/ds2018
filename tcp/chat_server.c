@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,7 +39,7 @@ int main() {
                 printf("client says: %s\n",s);
 
                 // now it's my (server) turn
-                printf("server>", s);
+                printf("server> ");
                 scanf("%s", s);
                 write(cli, s, strlen(s) + 1);
             }
