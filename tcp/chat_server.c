@@ -24,38 +24,30 @@ int main() {
 
     // then listen
     listen(ss, 0);
-    printf("Server init complete\n");
+
     while (1) {
         // an incoming connection
         cli = accept(ss, (struct sockaddr *)&ad, &ad_length);
-        printf("client %d connected\n",cli);
-        // create thread to receive from client
+
         pid = fork();
         if (pid == 0) {
-            // I'm the son, I'll serve receive from this client
+            // I'm the son, I'll serve this client
+            printf("client connected\n");
             while (1) {
-                // I wait and read message from client
+                // it's client turn to chat, I wait and read message from client
                 read(cli, s, sizeof(s));
-                printf("client %d says: %s\n",cli,s);
+                printf("client says: %s\n",s);
+
+                // now it's my (server) turn
+                printf("server> ");
+                scanf("%s", s);
+                write(cli, s, strlen(s) + 1);
             }
             return 0;
-        } else {
-            // If the father, create thread to send to client
-            pid = fork();
-            if (pid == 0)
-            {   
-                // I'm the son, I'll serve send to this client
-                while (1) {
-                    // now it's my (server) turn
-                    // keep read mess and send to client
-                    scanf("%s", s);
-                    write(cli, s, strlen(s) + 1);
-                }
-                return 0;
-            } else {
-                // I'm the father, continue the loop to accept more clients
-                continue;
-            } 
+        }
+        else {
+            // I'm the father, continue the loop to accept more clients
+            continue;
         }
     }
     // disconnect
