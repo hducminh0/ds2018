@@ -45,7 +45,8 @@ int main() {
             }
             return 0;
         }
-        else {
+        else 
+        {
             // I'm the father, continue the loop to accept more clients
             continue;
         }
