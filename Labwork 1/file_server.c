@@ -10,7 +10,8 @@ int main() {
     int ss, cli, pid;
     int state = 0;       
     struct sockaddr_in ad;
-    char s[100];
+    char s[1000000];
+    puts(s);
     socklen_t ad_length = sizeof(ad);
     FILE *pfile;
     char *buffer;
@@ -37,42 +38,110 @@ int main() {
         if (pid == 0) {
             // I'm the son, I'll serve this client
             printf("client connected\n");
-            while (1) {
-                // it's client turn to chat, I wait and read message from client
-               if (state % 2 == 0)
+            while(1)
+            {   
+                if (strcmp(s, "Ready to receive file") == 0)
                 {
+                    printf("Ready to receive file\n");
+                    read(cli, s, sizeof(s));
+                    pfile = fopen(s, "wb");
+                    strcpy(s, "Received file name");
+                    write(cli, s, strlen(s) + 1);
+                }
+                else if (strcmp(s, "Received file name") == 0)
+                {
+                    printf("Received file name\n");
                     read(cli, s, sizeof(s));
                     // printf("client says: %s\n",s);
                     filelen = atol(s);
                     printf("%lu\n", filelen);
+                    strcpy(s, "Received file length");
+                    write(cli, s, strlen(s) + 1);
                 }
-                else
+                else if (strcmp(s, "Received file length") == 0)
                 {
+                    printf("Received file length\n");
                     // create buffer to receive file
                     buffer = (char *)malloc((filelen + 1) * sizeof(char));
                     // printf("buffer: %lu\n", sizeof(buffer));
                     read(cli, buffer, filelen);
-                    pfile = fopen("received.png", "wb");
                     while (filelen > 0)
                     {
+                        printf("%lu\n", filelen);
                         // printf("%ld\n", filelen);
-                        int written = fwrite(buffer, 1, filelen, pfile);
-                        if (written < 1)
-                        {
-                            printf("Can't write to file");
-                            return -1;
-                        }
-
+                        int written = fwrite(buffer, 1, filelen+1, pfile);
                         buffer += written;
                         filelen -= written;
                     }
                     fclose(pfile);
-                    printf("Done");
-                    getchar();
+                    strcpy(s, "Done");
+                    write(cli, s, strlen(s) + 1);
                 }
-                state++;
+                else
+                {
+                    if (strcmp(s, "Done") == 0)
+                    {
+                        printf("wait\n");
+                        getchar();
+                        // memset(s, '\0', strlen(s));
+                    }
+                    strcpy(s, "Ready to receive file");
+                    write(cli, s, strlen(s) + 1);
+                }
             }
-            return 0;
+            
+            //     if (strcmp(s, "Ready to receive file") == 0)
+            //     {
+            //         read(cli, s, sizeof(s));
+            //         pfile = fopen(s, "wb");
+            //         s = "Received file name";
+            //         write(cli, s, strlen(s) + 1);
+            //     }
+            //     else
+            //     {   
+            //         s = "Ready to receive file"
+            //         write(cli, s, strlen(s) + 1);
+            //     }
+            // }
+
+
+
+            // while (1) {
+            //     // it's client turn to chat, I wait and read message from client
+            //    if (state % 2 == 0)
+            //     {
+            //         read(cli, s, sizeof(s));
+            //         // printf("client says: %s\n",s);
+            //         filelen = atol(s);
+            //         printf("%lu\n", filelen);
+            //     }
+            //     else
+            //     {
+            //         // create buffer to receive file
+            //         buffer = (char *)malloc((filelen + 1) * sizeof(char));
+            //         // printf("buffer: %lu\n", sizeof(buffer));
+            //         read(cli, buffer, filelen);
+            //         pfile = fopen("received.png", "wb");
+            //         while (filelen > 0)
+            //         {
+            //             // printf("%ld\n", filelen);
+            //             int written = fwrite(buffer, 1, filelen, pfile);
+            //             if (written < 1)
+            //             {
+            //                 printf("Can't write to file");
+            //                 return -1;
+            //             }
+
+            //             buffer += written;
+            //             filelen -= written;
+            //         }
+            //         fclose(pfile);
+            //         printf("Done");
+            //         getchar();
+            //     }
+            //     state++;
+            // }
+            // return 0;
         }
         else {
             // I'm the father, continue the loop to accept more clients
