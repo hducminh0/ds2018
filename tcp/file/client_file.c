@@ -34,11 +34,15 @@ int main(int argc, char* argv[]) {
 
     // connect to server
     connect(serv, (struct sockaddr *)&ad, ad_length);
-    printf("connect server %d success\n", serv);
+    printf("Connect server %d success\n", serv);
 
+    //----------------Send file stuff----------------
+    // command: ./client_file [host] [filename to send] [send with name]
+    // ex: ./client_file localhost cat.jpg abc.jpg
+    // server receive cat.jpg file and save as abc.jpg
 
     //send file name
-    printf("send file name to server: %s\n",namesend);
+    printf("Send file name to server: %s\n",namesend);
     numwrite = write(serv, namesend, strlen(namesend) + 1);
     if (numwrite <= 0)
     {
@@ -59,7 +63,7 @@ int main(int argc, char* argv[]) {
     sprintf(filelenstr,"%ld",filelen);      //long to string
 
     //send file size
-    printf("send file size to server: %s\n",filelenstr);
+    printf("Send file size to server: %s\n",filelenstr);
     numwrite = write(serv, filelenstr, strlen(filelenstr) + 1);
     if (numwrite <= 0)
     {
@@ -78,17 +82,17 @@ int main(int argc, char* argv[]) {
     fread(buffer, filelen, 1, pfile);
 
     //send file to server
-    printf("send file to server\n");
+    printf("Send file to server\n");
     numwrite = write(serv, buffer, filelen);
     if (numwrite <= 0)
     {
-        printf("File size not sended: %ld\n",numwrite);
+        printf("File not sended: %ld\n",numwrite);
         free(buffer);
         fclose(pfile);
         close(serv);
         return 0;
     }
-    printf("send complete: %ld bytes \n",numwrite);
+    printf("Send complete: %ld bytes \n",numwrite);
 
     // wait for OK message
     read(serv, stt, sizeof(stt));

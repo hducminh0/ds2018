@@ -37,8 +37,9 @@ int main() {
 
         pid = fork();
         if (pid == 0) {
+
             // I'm the son, I'll serve this client
-            printf("client %d connected\n", cli);
+            printf("Client %d connected\n", cli);
             
             // receive file name
             numread = read(cli, filename, sizeof(filename));
@@ -62,7 +63,7 @@ int main() {
                 return 0;
             }
             filelen = atol(filelenstr);
-            printf("File size received: %ld\n",filelen);
+            printf("File size received: %ld bytes\n",filelen);
 
             //send the OK message
             write(cli, stt, strlen(stt) + 1);
@@ -83,7 +84,7 @@ int main() {
                 numread = read(cli,buffer+fileread,filelen - fileread);
                 fileread += numread;
             }
-            printf("File received: %ld \n", fileread);
+            printf("File received: %ld bytes \n", fileread);
 
 
             //save file
@@ -97,7 +98,7 @@ int main() {
                 close(cli);
                 return 0;
             }
-            printf("File saved: %d \n",written);
+            printf("File saved: %d bytes\n",written);
 
             //send the OK message
             write(cli, stt, strlen(stt) + 1);
