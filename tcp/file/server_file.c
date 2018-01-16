@@ -59,13 +59,13 @@ int main() {
                 close(cli);
                 return 0;
             }
-            printf("File size received: %s\n",filelenstr);
             filelen = atol(filelenstr);
+            printf("File size received: %ld\n",filelen);
             write(cli, stt, strlen(stt) + 1);
 
             // receive file 
             buffer = (char *)malloc((filelen + 1) * sizeof(char));
-            numread = read(cli, buffer, sizeof(buffer));
+            numread = read(cli, buffer, filelen + 1);
             if (numread <= 0)
             {
                 printf("Read file failed: %d \n", numread);
@@ -73,8 +73,8 @@ int main() {
                 close(cli);
                 return 0;
             }
-            printf("File received.\n");
-            write(cli, stt, strlen(stt) + 1);
+            printf("File received: %d \n", numread);
+            printf("size buffer: %lu\n", sizeof(buffer));
 
             pfile = fopen(filename, "wb");
             int written = fwrite(buffer, sizeof(char), filelen, pfile);
@@ -87,7 +87,9 @@ int main() {
                 return 0;
             }
 
-            printf("File saved\n");
+            printf("File saved: %d \n",written);
+
+            write(cli, stt, strlen(stt) + 1);
 
             free(buffer);
             fclose(pfile);

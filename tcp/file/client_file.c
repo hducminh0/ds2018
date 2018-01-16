@@ -7,13 +7,15 @@
 #include <netdb.h>
 
 int main(int argc, char* argv[]) {
-    int so,numread,numwrite;
+    int so;
     struct sockaddr_in ad;
     char stt[100];
     char filename[200];
     strcpy(filename,argv[2]);
+    char namesend[200];
+    strcpy(namesend,argv[3]);
     FILE *pfile;
-    long filelen;
+    long filelen,numread,numwrite;
     char filelenstr[200];
     char *buffer;
 
@@ -36,11 +38,11 @@ int main(int argc, char* argv[]) {
 
 
     //send file name
-    printf("send file name to server: %s\n",filename);
-    numwrite = write(serv, filename, strlen(filename) + 1);
+    printf("send file name to server: %s\n",namesend);
+    numwrite = write(serv, namesend, strlen(namesend) + 1);
     if (numwrite <= 0)
     {
-        printf("Filename not sended: %d\n", numwrite);
+        printf("Filename not sended: %ld\n", numwrite);
 
         fclose(pfile);
         close(serv);
@@ -65,7 +67,7 @@ int main(int argc, char* argv[]) {
     numwrite = write(serv, filelenstr, strlen(filelenstr) + 1);
     if (numwrite <= 0)
     {
-        printf("File size not sended: %d\n",numwrite);
+        printf("File size not sended: %ld\n",numwrite);
         fclose(pfile);
         close(serv);
         return 0;
@@ -80,16 +82,16 @@ int main(int argc, char* argv[]) {
 
     //send file to server
     printf("send file to server\n");
-    numwrite = write(serv, buffer, strlen(buffer) + 1);
+    numwrite = write(serv, buffer, filelen);
     if (numwrite <= 0)
     {
-        printf("File size not sended: %d\n",numwrite);
+        printf("File size not sended: %ld\n",numwrite);
         free(buffer);
         fclose(pfile);
         close(serv);
         return 0;
     }
-    printf("send complete\n");
+    printf("send complete: %ld \n",numwrite);
 
     read(serv, stt, sizeof(stt));
 
