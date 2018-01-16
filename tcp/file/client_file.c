@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
 
     // connect to server
     connect(serv, (struct sockaddr *)&ad, ad_length);
-    printf("connect server success\n");
+    printf("connect server %d success\n", serv);
 
 
     //send file name
@@ -49,18 +49,14 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    // wait for OK message
     read(serv, stt, sizeof(stt));
 
-    //open file
-    pfile = fopen(filename, "rb");
-    //go to end
-    fseek(pfile, 0, SEEK_END);
-    //check the number of bytes = position of pointer
-    filelen = ftell(pfile);
-    //go back to start
-    rewind(pfile);
-    //long to string
-    sprintf(filelenstr,"%ld",filelen);
+    pfile = fopen(filename, "rb");          //open file
+    fseek(pfile, 0, SEEK_END);              //go to end
+    filelen = ftell(pfile);                 //check the number of bytes = position of pointer
+    rewind(pfile);                          //go back to start
+    sprintf(filelenstr,"%ld",filelen);      //long to string
 
     //send file size
     printf("send file size to server: %s\n",filelenstr);
@@ -73,6 +69,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    // wait for OK message
     read(serv, stt, sizeof(stt));
 
     //create free memory for file
@@ -91,12 +88,14 @@ int main(int argc, char* argv[]) {
         close(serv);
         return 0;
     }
-    printf("send complete: %ld \n",numwrite);
+    printf("send complete: %ld bytes \n",numwrite);
 
+    // wait for OK message
     read(serv, stt, sizeof(stt));
 
     free(buffer);
     fclose(pfile);
     close(serv);
+    printf("END.\n");
     return 0;
 }
