@@ -7,11 +7,10 @@
 #include <netdb.h>
 
 int main() {
-    int ss, cli, pid;
+    int ss, cli, pid, written;
     int state = 0;       
     struct sockaddr_in ad;
     char s[1000000];
-    puts(s);
     socklen_t ad_length = sizeof(ad);
     FILE *pfile;
     char *buffer;
@@ -52,7 +51,6 @@ int main() {
                 {
                     printf("Received file name\n");
                     read(cli, s, sizeof(s));
-                    // printf("client says: %s\n",s);
                     filelen = atol(s);
                     printf("%lu\n", filelen);
                     strcpy(s, "Received file length");
@@ -64,12 +62,19 @@ int main() {
                     // create buffer to receive file
                     buffer = (char *)malloc((filelen + 1) * sizeof(char));
                     // printf("buffer: %lu\n", sizeof(buffer));
-                    read(cli, buffer, filelen);
+                    // read(cli, buffer, filelen);
+                    long templen = filelen;
+                    char* ptemp = buffer;
+                    while (templen > 0)
+                    {
+                        int written = read(cli, ptemp, templen);
+                        ptemp = ptemp + written;
+                        templen -= written;
+                    }
+                    // rewind(buffer);
                     while (filelen > 0)
                     {
-                        printf("%lu\n", filelen);
-                        // printf("%ld\n", filelen);
-                        int written = fwrite(buffer, 1, filelen+1, pfile);
+                        int written = fwrite(buffer, 1, filelen, pfile);
                         buffer += written;
                         filelen -= written;
                     }
@@ -81,7 +86,7 @@ int main() {
                 {
                     if (strcmp(s, "Done") == 0)
                     {
-                        printf("wait\n");
+                        printf("Press enter to continue receive files\n");
                         getchar();
                         // memset(s, '\0', strlen(s));
                     }

@@ -34,7 +34,6 @@ int main(int argc, char* argv[]) {
     {
         // after connected, it's client turn to chat
         read(serv, s, sizeof(s));       // read respoonse message from server
-        
         if (strcmp(s, "Ready to receive file") == 0)
         {
             printf("Ready to receive file\n");
@@ -62,11 +61,17 @@ int main(int argc, char* argv[]) {
             // printf("buffer: %lu\n", sizeof(buffer));
             fread(buffer, filelen, 1, pfile);
             fclose (pfile);
-            write(serv, buffer, filelen + 1);
+            while(filelen > 0)
+            {
+                int written = write(serv, buffer, filelen + 1);
+                buffer += written;
+                filelen -= written;
+            }
         }
         else
         {
-            printf("wait");
+            memset(s, '\0', sizeof(s));
+            printf("Wait\n");
         }
 
         // if (strcmp(s, "Ready to receive file") == 0)        // if the server is ready to receive file
