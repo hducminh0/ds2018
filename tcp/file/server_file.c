@@ -38,7 +38,7 @@ int main() {
         pid = fork();
         if (pid == 0) {
             // I'm the son, I'll serve this client
-            printf("client connected\n");
+            printf("client %d connected\n", cli);
             
             // receive file name
             numread = read(cli, filename, sizeof(filename));
@@ -94,6 +94,7 @@ int main() {
             free(buffer);
             fclose(pfile);
             close(cli);
+            printf("Thread for client %d ended.\n", cli );
             return 0;
         }
         else {
