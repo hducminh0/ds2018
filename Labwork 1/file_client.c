@@ -33,9 +33,11 @@ int main(int argc, char* argv[]) {
     while (1) 
     {
         // after connected, it's client turn to chat
-        read(serv, s, sizeof(s));       // read respoonse message from server
+        read(serv, s, sizeof(s));       // read response message from the server
+        // Verify the response to know what to do 
         if (strcmp(s, "Ready to receive file") == 0)
         {
+            // start to send file name to the server
             printf("Ready to receive file\n");
             printf("client> Please enter file name: "); 
             scanf("%s", s);
@@ -44,23 +46,26 @@ int main(int argc, char* argv[]) {
         }
         else if (strcmp(s, "Received file name") == 0)
         {
+            // start to send file length to the server
             printf("Received file name\n");
             fseek(pfile, 0, SEEK_END);      // go to the end of the file
             filelen = ftell(pfile);         // length of the file
             rewind(pfile);          // set the pointer back to the start of the file 
             sprintf(s, "%ld", filelen);      // turn filelen into string to put into buffer
             // printf("%ld\n", filelen);
-            write(serv, s, strlen(s) + 1);  
+            write(serv, s, strlen(s) + 1);          // send file length
             printf("%lu\n", filelen);
         }
         else if (strcmp(s, "Received file length") == 0)
         {
+            //  start to send file content to the server 
             printf("Received file length\n");
             // create buffer to send file 
             buffer = (char *)malloc((filelen + 1) * sizeof(char));       // create a buffer to 
             // printf("buffer: %lu\n", sizeof(buffer));
             fread(buffer, filelen, 1, pfile);
             fclose (pfile);
+            // send file to the server 
             while(filelen > 0)
             {
                 int written = write(serv, buffer, filelen);
@@ -71,44 +76,9 @@ int main(int argc, char* argv[]) {
         }
         else
         {
-            printf("Wait: %s\n", s);
+            // when there is not a verified message -> wait
+            printf("Wait\n");
         }
-
-        // if (strcmp(s, "Ready to receive file") == 0)        // if the server is ready to receive file
-        // {
-        //     printf("client> Please enter file name: ");     // prompt file name
-        //     scanf("%s", s);
-        //     pfile = fopen(s, "rb");         // open file
-        //     write(serv, s, strlen(s) + 1);          // send file name to the server
-        // }
-        // else if (strcmp())
-        // {
-                
-        // }
-
-
-        // if (state % 2 == 0)
-        // {
-        //     printf("client>");
-        //     scanf("%s", s);
-        //     pfile = fopen(s, "rb");         // open file 
-        //     fseek(pfile, 0, SEEK_END);      // go to the end of the file
-        //     filelen = ftell(pfile);         // length of the file
-        //     rewind(pfile);          // set the pointer back to the start of the file 
-        //     sprintf(str_filelen, "%ld", filelen);      // turn filelen into string to put into buffer
-        //     // printf("%ld\n", filelen);
-        //     write(serv, str_filelen, strlen(str_filelen) + 1); 
-        // }
-        // else
-        // {
-        //     // create buffer to send file 
-        //     buffer = (char *)malloc((filelen + 1) * sizeof(char));       // create a buffer to 
-        //     // printf("buffer: %lu\n", sizeof(buffer));
-        //     fread(buffer, filelen, 1, pfile);
-        //     fclose (pfile);
-        //     write(serv, buffer, filelen + 1);
-        // }
-        // state++;
     }
 }
 
