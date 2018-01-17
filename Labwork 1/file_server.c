@@ -10,11 +10,12 @@ int main() {
     int ss, cli, pid, written;
     int state = 0;       
     struct sockaddr_in ad;
-    char s[1000000];
+    char s[200];
     socklen_t ad_length = sizeof(ad);
     FILE *pfile;
     char *buffer;
     long filelen;
+    int numread;
 
     // create the socket
     ss = socket(AF_INET, SOCK_STREAM, 0);
@@ -42,7 +43,9 @@ int main() {
                 if (strcmp(s, "Ready to receive file") == 0)
                 {
                     printf("Ready to receive file\n");
+                    // numread = read(cli, s, sizeof(s));
                     read(cli, s, sizeof(s));
+                    // printf("numread %d, s = %s\n",numread,s );
                     pfile = fopen(s, "wb");
                     strcpy(s, "Received file name");
                     write(cli, s, strlen(s) + 1);
@@ -64,13 +67,15 @@ int main() {
                     // printf("buffer: %lu\n", sizeof(buffer));
                     // read(cli, buffer, filelen);
                     long templen = filelen;
-                    char* ptemp = buffer;
                     while (templen > 0)
                     {
-                        int written = read(cli, ptemp, templen);
-                        ptemp = ptemp + written;
+                        int written = read(cli, buffer, templen);
+                        buffer = buffer + written;
                         templen -= written;
+
                     }
+                    // printf("%lu\n", templen);
+                    buffer -= filelen;
                     // rewind(buffer);
                     while (filelen > 0)
                     {

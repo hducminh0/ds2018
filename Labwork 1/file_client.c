@@ -7,8 +7,8 @@
 #include <netdb.h>
 
 int main(int argc, char* argv[]) {
-    int so, state = 0;
-    char s[1000000];
+    int so;
+    char s[200];
     struct sockaddr_in ad;
     FILE *pfile;
     char *buffer;
@@ -63,15 +63,15 @@ int main(int argc, char* argv[]) {
             fclose (pfile);
             while(filelen > 0)
             {
-                int written = write(serv, buffer, filelen + 1);
+                int written = write(serv, buffer, filelen);
                 buffer += written;
                 filelen -= written;
+                // printf("%lu\n", filelen);
             }
         }
         else
         {
-            memset(s, '\0', sizeof(s));
-            printf("Wait\n");
+            printf("Wait: %s\n", s);
         }
 
         // if (strcmp(s, "Ready to receive file") == 0)        // if the server is ready to receive file
