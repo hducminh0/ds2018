@@ -39,7 +39,7 @@ int main() {
                 printf("client says: %s\n",s);
 
                 // now it's my (server) turn
-                printf("server %s\n", s);
+                printf("server> ");
                 scanf("%s", s);
                 write(cli, s, strlen(s) + 1);
             }
