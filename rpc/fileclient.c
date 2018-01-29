@@ -82,7 +82,7 @@ int main(int argc, char const *argv[])
 
     fclose(file);
 
-    printf("File Sent: %s\n",buffer.name );
+    printf("File Sent: %s\n",buff.name );
     printf("Bytes Sent: %ld\n", total_bytes);
 
 	return 0;
