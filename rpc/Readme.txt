@@ -1,32 +1,34 @@
+Requirement:
+rpcgen
+gcc
+
 Compile step:
-rpcgen filetrans.x
-gcc -c fileclient.c -o fileclient.o
-gcc -c filetrans_clnt.c -o filetrans_clnt.o
-gcc -c filetrans_xdr.c -o filetrans_xdr.o
-gcc -o fileclient fileclient.o filetrans_clnt.o filetrans_xdr.o
-gcc -c fileclient.c fileserver.c filetrans_xdr.c
-gcc -c fileserver.c -o fileserver.o
-gcc -c filetrans_svc.c -o filetrans_svc.o
-gcc -o fileserver fileserver.o filetrans_svc.o filetrans_xdr.o
+cd <the-folder-that-u-put-everything-in>
+chmod +x Makefile
+./Makefile
 
-[root@localhost~]#rpcgen -C filetrans.x
-[root@localhost~]#gcc -c fileclient.c -o fileclient.o
-[root@localhost~]#gcc -c filetrans_clnt.c -o filetrans_clnt.o
-[root@localhost~]#gcc -c filetrans_xdr.c -o filetrans.xdr.o
-[root@localhost~]#gcc -o fileclient fileclient.o filetrans_clnt.o filetrans_xdr.o
-[root@localhost~]#gcc -c fileclient.c fileserver.c filetrans_xdr.c
-[root@localhost~]#gcc -c fileserver.c -o fileserver.o
-[root@localhost~]#gcc -c filetrans_svc.c -o filetrans_svc.o
-[root@localhost~]#gcc -o fileserver fileserver.o filetrans_svc.o filetrans_xdr.o
-//Run server in deamon
-[root@localhost~]#./fileserver &
-[1] 2264
-[root@localhost~]#./fileclient localhost test.txt
+Usage:
+./fileserver &
+./fileclient <host> <file>
 
-//Find and kill server
+Exit:
 ps -ef | grep server
 kill <PID>
 
+Ex:
+//make things
+[root@localhost~]#cd rpc/
+[root@localhost~]#chmod +x Makefile
+[root@localhost~]#./Makefile
+
+//Run server in deamon
+[root@localhost~]#./fileserver &
+[1] 2264
+[root@localhost~]#./fileclient localhost cat.jpg
+File sent: cat.jpgsv
+Byte sent: 289242
+
+//Find and kill server
 [root@localhost~]#ps -ef | grep server
   UID   PID  PPID   C STIME   TTY           TIME CMD
   501  6262     1   0 11:34AM ??         0:00.04 ./fileserver
