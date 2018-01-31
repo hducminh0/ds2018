@@ -1,0 +1,122 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[latin1]{inputenc}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm, headsep=14pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\title{Report 1}
+\author{Group 2}
+% \author[2]{Hoang Duc Minh, Le Tan Nhat Linh, Luong Hung Son,}
+% \author[3]{ Nguyen Vu Hung, Truong Hai Long}
+\date{January 17, 2018}
+
+\begin{document}
+\maketitle
+  \section{Why we choose our specific MPI implementation:}
+    In this labwork, we choose MPICH because it is an open-source with high-speed network. Thanks to MPICH, we can easily access to the library mpi.h, create MPI enviroment and utilize its functions to implement the file transfer 
+  
+  \section{How we design our MPI service:}
+    The system must have at least 2 or more processes to handle the task of tranfering file. Process A decides which file to be sent to process B. After that, the file's data is packed up into a buffer and put into a message, each message is assigned with a specific ID (known as tags). In our MPI service, the network routes the message to its proper destination. The message with the file is then routed to B; however, process B still needs to verify if it wants to receives that message (by verifying the tag). If yes, the file's data is transmitted to B and stored into a new file.
+    \begin{figure}[h]
+        \centering
+       \includegraphics{designMPI.png}
+    \end{figure}
+
+  \section{How we organize our system:}
+    We first need to create and set up the MPI environment, including the form of all processes and their ranks (each process is assgined with a rank starting from 0). We then make a condition that if the number of process is smaller than 2, the program will be aborted. Now we come to the part for transfering file, here is between 2 processes in a more specific way. The program check if it is the master process (rank 0), if it is true, the user needs to input the file name, then the system will store the file's data into a buffer and send it to the other process in a message with a specific tag. That process decides if it will receive the message with the file's data or not by verifying its tag. Once the message is accepted, the file's data is transmitted and stored into a new file. After that, the system cleans up and comes to an end. 
+    \begin{figure}[h]
+        \centering
+       \includegraphics[scale=0.5]{organizeMPI.png}
+    \end{figure}
+
+  \section{How we implement the file transfer:}
+    *Note: we can only send from lower-ranked process to higher-ranked process but not vice versa.\\\\
+    In the phase of process master (rank 0) , we ask the user to input the name of the file to be sent. We write code to get the file's size and read its data into a buffer. Process 0 sends the file's length first then the file's data to process 1 in two distinct messages. Process 1 verify which message to received by the tags, then received both of them. A buffer is created to store the file's data, then we write to a new file from that buffer.    
+    \begin{verbatim}
+    #include <mpi.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    
+    int main(int argc, char** argv) {
+      // Initialize the MPI environment
+      MPI_Init(NULL, NULL);
+      // Find out rank, size
+      int world_size;
+      MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    
+      // Get the rank of the process
+      int world_rank;
+      MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    
+      // Get the name of the processor
+      char processor_name[MPI_MAX_PROCESSOR_NAME];
+      int name_len;
+      MPI_Get_processor_name(processor_name, &name_len);
+
+    
+      // We are assuming at least 2 processes for this task
+      if (world_size < 2)
+      {
+        fprintf(stderr, "World size must be greater than 1 for %s\n", argv[0]);
+        MPI_Abort(MPI_COMM_WORLD, 1);
+      }	
+    
+      // variable declaration 
+      char file_name[100], *buffer;       
+      int filelen;
+      FILE *pfile;
+      int number;
+    
+      // rank 0 sends file
+      if (world_rank == 0) 
+      {
+        // file transferring 
+        printf("Rank %d: Enter file name: ", world_rank);
+        scanf("%s", file_name);
+    
+        // prepare file
+        pfile = fopen(file_name, "rb");
+        fseek(pfile, 0, SEEK_END);      // go to the end of the file
+        filelen = ftell(pfile);         // length of the file
+        rewind(pfile);  // set the pointer back to the start of the file 
+        // create a buffer to read content of the file
+        buffer = (char *)malloc((filelen + 1) * sizeof(char)); 
+        fread(buffer, filelen, 1, pfile);
+        fclose (pfile); 
+        // transfer file using MPI to rank 1
+        // tag 0 -> send filelen 
+        MPI_Send(&filelen, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);
+        // tag 1 -> send file content
+        MPI_Send(buffer, filelen, MPI_BYTE, 1, 1, MPI_COMM_WORLD);
+        printf("Rank %d sent\n", world_rank);
+      }
+      // rank 1 receives file 
+      else if (world_rank == 1)
+      {
+        // receive filelen from rank 0
+        MPI_Recv(&filelen, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        // initialize buffer to store received file 
+        buffer = (char *)malloc((filelen + 1) * sizeof(char));
+        // receive file content
+        MPI_Recv(buffer, filelen, MPI_BYTE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        pfile = fopen("Received", "wb");
+        while (filelen > 0)
+        {
+            int written = fwrite(buffer, 1, filelen, pfile);
+            buffer += written;
+            filelen -= written;
+        }
+        fclose(pfile);
+        printf("Rank %d received\n", world_rank);
+      }
+      MPI_Finalize();
+      return 0;
+    }
+    \end{verbatim}
+  
+    \section{Who does what}
+    Minh modified the code from labwork 1 to be suitable for MPI. Son and Long refactored the code and wrote the report.
+\end{document}
