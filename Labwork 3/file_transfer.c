@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
   }	
 
   // variable declaration 
-  char file_name[100], *buffer;       
+  char file_name[100];       
   int filelen;
   FILE *pfile;
   int number;
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
     fseek(pfile, 0, SEEK_END);      // go to the end of the file
     filelen = ftell(pfile);         // length of the file
     rewind(pfile);          // set the pointer back to the start of the file 
-    buffer = (char *)malloc((filelen + 1) * sizeof(char));       // create a buffer to read content of the file
+    char *buffer = (char *)malloc((filelen + 1) * sizeof(char));       // create a buffer to read content of the file
     fread(buffer, filelen, 1, pfile);
     fclose (pfile); 
 
@@ -53,12 +53,13 @@ int main(int argc, char** argv) {
     MPI_Send(&filelen, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);		// tag 0 -> send filelen 
     MPI_Send(buffer, filelen, MPI_BYTE, 1, 1, MPI_COMM_WORLD);	// tag 1 -> send file content
     printf("Rank %d sent\n", world_rank);
+    free(buffer);
   }
   // rank 1 receives file 
   else if (world_rank == 1)
   {
     MPI_Recv(&filelen, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);	// receive filelen from rank 0
-    buffer = (char *)malloc((filelen + 1) * sizeof(char));		// initialize buffer to store received file 
+    char *buffer = (char *)malloc((filelen + 1) * sizeof(char));		// initialize buffer to store received file 
     MPI_Recv(buffer, filelen, MPI_BYTE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);		// receive file content
     pfile = fopen("Received", "wb");
     while (filelen > 0)
@@ -69,6 +70,7 @@ int main(int argc, char** argv) {
     }
     fclose(pfile);
     printf("Rank %d received\n", world_rank);
+    free(buffer);
   }
   MPI_Finalize();
   return 0;
