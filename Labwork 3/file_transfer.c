@@ -50,6 +50,7 @@ int main(int argc, char** argv) {
     fclose (pfile); 
 
     // transfer file using MPI to rank 1
+    MPI_Send(file_name, sizeof(file_name), MPI_BYTE, 1, 2, MPI_COMM_WORLD);	// tag 2 -> send file name
     MPI_Send(&filelen, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);		// tag 0 -> send filelen 
     MPI_Send(buffer, filelen, MPI_BYTE, 1, 1, MPI_COMM_WORLD);	// tag 1 -> send file content
     printf("Rank %d sent\n", world_rank);
@@ -59,14 +60,14 @@ int main(int argc, char** argv) {
   else if (world_rank == 1)
   {
     MPI_Recv(&filelen, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);	// receive filelen from rank 0
-    char *buffer = (char *)malloc((filelen + 1) * sizeof(char));		// initialize buffer to store received file 
+    char *buffer = (char *)malloc((filelen + 1) * sizeof(char));		// initialize buffer to store received file
+    MPI_Recv(file_name, sizeof(file_name), MPI_BYTE, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);		// receive file name 
     MPI_Recv(buffer, filelen, MPI_BYTE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);		// receive file content
-    pfile = fopen("Received", "wb");
-    while (filelen > 0)
+    pfile = fopen(file_name, "wb");
+    int written = 0; 
+    while (written < filelen)
     {
-        int written = fwrite(buffer, 1, filelen, pfile);
-        buffer += written;
-        filelen -= written;
+        written += fwrite(buffer+written, 1, filelen, pfile);     
     }
     fclose(pfile);
     printf("Rank %d received\n", world_rank);
