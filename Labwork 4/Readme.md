@@ -1,6 +1,6 @@
-# Work in Hadoop Local (Standalone) Mode
+# Working in Hadoop Local (Standalone) Mode
 
-# How to make it work:
+# How to make it works:
 
 ## Requirement:
 
