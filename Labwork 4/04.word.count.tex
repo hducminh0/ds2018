@@ -1,0 +1,27 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm, headsep=14pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\title{Report 1}
+\author{Group 2}
+% \author[2]{Hoang Duc Minh, Le Tan Nhat Linh, Luong Hung Son,}
+% \author[3]{ Nguyen Vu Hung, Truong Hai Long}
+\date{January 17, 2018}
+
+\begin{document}
+\maketitle
+  \section{Why we choose our specific MapReduce implementation:}
+    In this labwork, we chose Apache Hadoop because it is the most common open-source software framework using MapReduce programming model. Hadoop is also easy to use and there are plenty of instructions that we can follow to learning about it. 
+  
+  \section{How our Mapper and Reducer work:}
+    Mapper takes in text data of the input files, each map deals with one file. It converts text data to one big string then makes words into tokens. It uses an iterator to go through all the tokens, treats each tokens as a key and marks each of them with value 1. For example, in a file "Hello world from the world", we have <hello, 1>, <world, 1>, <from, 1>, <the, 1>, <world, 1>.\\
+    Reducer adds all the values which are from the same key in all the maps to produce the occurrence of a word. In the previous example, after pairs of key and value are created by the mapper, there are 2 pairs having the identical key, <world>. The reducer adds the values of these two pair to create <world, 2>.\\
+    In the end, the out put is the occurrence of a word in all the file. According to the example, we have <hello, 1>, <world, 2>, <from, 1>, <the, 1>.
+    
+  \section{Who does what}
+    Long, Son and Hung worked on the implementation of the labwork. Minh and Linh wrote the report
+\end{document}
