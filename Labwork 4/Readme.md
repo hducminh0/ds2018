@@ -57,7 +57,7 @@ $ jar cf wc.jar WordCount*.class
 * /user/joe/wordcount/input - input directory in HDFS
 * /user/joe/wordcount/output - output directory in HDFS
 
-  	Make sample text for input:
+  Make sample text for input:
 ```
 $ bin/hadoop fs -cat /user/joe/wordcount/input/file01
 Hello World Bye World
@@ -65,7 +65,9 @@ Hello World Bye World
 $ bin/hadoop fs -cat /user/joe/wordcount/input/file02
 Hello Hadoop Goodbye Hadoop
 ```
-	Execute:
+
+  Execute:
+
 ```
 $ hadoop jar wc.jar WordCount /user/joe/wordcount/input /user/joe/wordcount/output
 ```
