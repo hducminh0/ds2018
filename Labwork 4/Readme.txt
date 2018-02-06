@@ -15,7 +15,12 @@ _Hadoop: Setting up a Single Node Cluster_
 	export HDP=$HDP_HOME/bin
 	export PATH=$HDP:$PATH
 ```
-3. try `hadoop` command. It should look like this:
+3. Cd to hadoop folder. Copy config to input folder.
+```
+$ mkdir input
+$ cp etc/hadoop/*.xml input
+```
+4. try `hadoop` command. It should look like this:
 ```
 Usage: hadoop [--config confdir] [COMMAND | CLASSNAME]
   CLASSNAME            run the class named CLASSNAME
@@ -37,7 +42,7 @@ Usage: hadoop [--config confdir] [COMMAND | CLASSNAME]
 
 Most commands print help when invoked w/o parameters.
 ```
-4. Done Local Install. 
+5. Done Local Install. 
    More: https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SingleCluster.html
 
 ## Compile and Execute:
