@@ -9,11 +9,11 @@ _Hadoop: Setting up a Single Node Cluster_
 1. Download stable version of Hadoop, put it in somewhere safe !
 2. Set the JAVA_HOME and Hadoop environment
 ```bash
-	export JAVA_HOME= <your-java-home-path>
-	export HADOOP_CLASSPATH="${JAVA_HOME}/lib/tools.jar"
-	export HDP_HOME= <your-hadoop-folder>
-	export HDP=$HDP_HOME/bin
-	export PATH=$HDP:$PATH
+export JAVA_HOME= <your-java-home-path>
+export HADOOP_CLASSPATH="${JAVA_HOME}/lib/tools.jar"
+export HDP_HOME= <your-hadoop-folder>
+export HDP=$HDP_HOME/bin
+export PATH=$HDP:$PATH
 ```
 3. Cd to hadoop folder. Copy config to input folder.
 ```
