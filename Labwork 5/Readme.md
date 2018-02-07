@@ -59,25 +59,26 @@ $ jar cf lp.jar LongestPath*.class
 
   Make sample text for input:
 ```
-$ bin/hadoop fs -cat /user/joe/wordcount/input/file01
-Hello World Bye World
+$ bin/hadoop fs -cat /user/joe/longestpath/input/manyline01
+this is the first line
+sdaadsjdhsklaj  dlwa nkdwl kakl kwm alkda
+sample sample sample sample sample sample sample
+ok 3-4 line is enough.
 
-$ bin/hadoop fs -cat /user/joe/wordcount/input/file02
-Hello Hadoop Goodbye Hadoop
+$ bin/hadoop fs -cat /user/joe/longestpath/input/manyline02
+random random random random random
+123812750921401 0 2903 1099 28931098 abcs
+2 line in this file
 ```
 
   Execute:
 
 ```
-$ hadoop jar lp.jar LongestPath /user/joe/wordcount/input /user/joe/wordcount/output
+$ hadoop jar lp.jar LongestPath /user/joe/longestpath/input /user/joe/longestpath/output
 ```
 
 3. Output:
 ```
-$ cat /user/joe/wordcount/output/part-r-00000
-Bye 1
-Goodbye 1
-Hadoop 2
-Hello 2
-World 2
+$ cat /user/joe/longestpath/output/part-r-00000
+sample sample sample sample sample sample sample  48
 ```
