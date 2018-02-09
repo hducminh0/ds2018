@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
     int written = 0; 
     while (written < filelen)
     {
-        written += fwrite(buffer+written, 1, filelen, pfile);     
+        written += fwrite(buffer + written, 1, filelen, pfile);     
     }
     fclose(pfile);
     printf("Rank %d received\n", world_rank);
