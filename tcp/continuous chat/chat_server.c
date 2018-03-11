@@ -6,11 +6,20 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <signal.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+
+//shared data between process
+static char *svsaid; 
 
 int main() {
+    //shared data between process
+    svsaid = (char*) mmap(NULL, 100, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    char clsaid[100];
+
     int ss, cli, pid_write, pid_read;
     struct sockaddr_in ad;
-    char s[100];
+    
     socklen_t ad_length = sizeof(ad);
 
     // create the socket
@@ -25,6 +34,17 @@ int main() {
 
     // then listen
     listen(ss, 0);
+
+    // create thread to read from screen
+    pid_write = fork();
+    if (pid_write == 0) {
+        // I'm the son, I'll serve read from screen
+        while (1) {
+            // keep read mess and send to client
+            fgets(svsaid, 95, stdin);
+        }
+    }
+
     printf("Server init complete\n");
     while (1) {
         // an incoming connection
@@ -35,14 +55,16 @@ int main() {
         pid_write = fork();
         if (pid_write == 0) {
             // I'm the son, I'll serve send to this client
+            char svold[100];
             while (1) {
                 // now it's my (server) turn
                 // keep read mess and send to client
-                fgets(s, 95, stdin);
-                int numwrite = write(cli, s, strlen(s) + 1);
+                if (strcmp(svsaid,&svold[0]) != 0)
+                {
+                    int numwrite = write(cli, svsaid, 100);
+                    memcpy(svold,svsaid,100);
+                }
             }
-
-            
         } else {
             // If the father, create thread to receive from client
             pid_read = fork();
@@ -52,11 +74,11 @@ int main() {
                 // but I have the writing thread PID from father
                 while (1) {
                     // I wait and read message from client
-                    int numread = read(cli, s, sizeof(s));
+                    int numread = read(cli, clsaid, sizeof(clsaid));
                     if (numread != 0)
                     {
                         // read success, print mess
-                        printf("client %d says: %s\n",cli,s);    
+                        printf("client %d says: %s\n",cli,clsaid);    
                     } else {
                         // read fail, disconnected, kill the writing thread.
                         printf("client %d disconnected\n", cli);
@@ -64,7 +86,6 @@ int main() {
                         // break out to close socket and end reading thread.
                         break;
                     }
-                    
                 }
                 close(cli);
                 return 0;
