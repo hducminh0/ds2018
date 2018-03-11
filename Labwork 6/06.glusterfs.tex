@@ -1,0 +1,99 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[latin1]{inputenc}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm, headsep=14pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{spverbatim}
+\title{Report 6 Gluster}
+\author{Group 2}
+% \author{Nguyen Vu Hung}
+\begin{document}
+\maketitle
+  \section{Setup everything}
+    \textbf{\large Install GlusterFS}\\
+        Add the GlusterFS PPA 
+        \begin{verbatim}
+            sudo add-apt-repository ppa:gluster/glusterfs-3.13
+        \end{verbatim}
+        Update GlusterFS
+        \begin{verbatim}
+            sudo apt-get update
+        \end{verbatim}
+        Install GlusterFS
+        \begin{verbatim}
+           sudo apt-get install -y glusterfs-server
+        \end{verbatim}
+        
+     \textbf{\large Create a trusted pool}\\
+        Sometimes you have to configure the firewall before connecting. Use ifconfig to check your IP\\
+        \begin{verbatim}
+            sudo iptables -I INPUT -p all -s <ip-address> -j ACCEPT
+        \end{verbatim}
+            Note: When you input ip address, you do not need "< >" \\
+            Add server to trusted pool
+        \begin{verbatim}
+           sudo gluster peer probe <ip-address>
+        \end{verbatim}
+        Check for all peer status to make sure you are connected
+        \begin{verbatim}
+           sudo gluster peer status
+        \end{verbatim}   
+        
+    \textbf{\large Create a Distributed Replicated Volume}\\
+        For server and each node make a storage to act as a brick. Do not grant the storage root permission\\
+        For example
+        \begin{verbatim}
+            mkdir home/hung/gluster/test
+        \end{verbatim}
+        Create a distributed replicated volume
+        \begin{spverbatim}
+           sudo gluster volume create <volume name> replica <int> transport tcp <ip server1>:<path of brick server 1> <ip server2>:<path of brick server 2> ... force
+        \end{spverbatim}
+        \\Number of bricks is not a multiple of replica count <int>. For example\\
+         \textbf{\small sudo gluster volume create test replica 2 transport tcp 
+         192.168.0.160:/home/hung/gluster/test 192.168.0.175/home/lezardvaleth97/gluster/test force}
+        \\Start the volume
+        \begin{verbatim}
+            sudo gluster volume start <volume name>
+            sudo gluster volume start test
+        \end{verbatim}
+        \textbf{Setup clients}\\
+        Each client have to install GlusterFS client
+        \begin{verbatim}
+            sudo apt-get install -y glusterfs-client
+        \end{verbatim}
+        Create a directory to mount glusterfs flies to client (use mkdir) then mount
+        \begin{verbatim}
+            mount -t glusterfs <host ip address>:/<volume name> <directory>
+            mount -t glusterfs 192.168.0.160:/test /home/hung/glusterfs
+        \end{verbatim}
+        u can check if the system i mounted or not by
+        \begin{verbatim}
+            df -h
+        \end{verbatim}
+        From now, you should be able to transfer file from each node. Copy the file to the volume then it's done\\
+        To check the volume status
+        \begin{verbatim}
+            sudo gluster volume info
+        \end{verbatim}
+ 
+    \section{Perform benchmark}
+    To perform benchmark, first we send a brick with large size through gluster.\\
+    The volume top command allows you to view the glusterFS bricks’ performance metrics
+     \begin{spverbatim}
+            sudo gluster volume top test read-perf bs 1000000 count 1 brick 192.168.0.175:/home/lezardvaleth97/gluster/test
+        \end{spverbatim}
+        or we can use
+        \begin{verbatim}
+            sudo iozone -r 128k -i 0 -i 1 -i 2 -t 24 -s 10G
+        \end{verbatim}
+        Set record size 128Kb, random write/rewrite, read/reread and write/read, set number of threads to 24 and specify the size of test at 10Gb.\\
+        We can see that glusterfs transfer files faster with large size file. The reading speed of glusterfs is also faster than writing spped.
+        Note: We used local area network to test.
+        
+    \section{Who does what}
+Nguyen Vu Hung did and wrote the report
+\end{document}
