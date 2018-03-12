@@ -10,7 +10,7 @@
 
 int main() {
 //----------------------------------INIT SERVER----------------------------------
-    int mysocket, cli, pid_write, pid_read;
+    int mysocket, cli, pid_client;
     struct sockaddr_in socket_address;
     char cli_ip[100];
     socklen_t skaddr_length = sizeof(socket_address);
