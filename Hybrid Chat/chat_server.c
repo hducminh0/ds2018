@@ -9,36 +9,40 @@
 #include <netinet/in.h>
 
 int main() {
-    int ss, cli, pid_write, pid_read;
-    struct sockaddr_in ad;
-    char s[100];
-    char so[100];
-    socklen_t ad_length = sizeof(ad);
+//----------------------------------INIT SERVER----------------------------------
+    int sckt, cli, pid_write, pid_read;
+    struct sockaddr_in skaddr;
+    char cli_ip[100];
+    socklen_t skaddr_length = sizeof(skaddr);
 
     // create the socket
-    ss = socket(AF_INET, SOCK_STREAM, 0);
+    sckt = socket(AF_INET, SOCK_STREAM, 0);
 
     // bind the socket to port 12345
-    memset(&ad, 0, sizeof(ad));
-    ad.sin_family = AF_INET;
-    ad.sin_addr.s_addr = INADDR_ANY;
-    ad.sin_port = htons(12345);
-    bind(ss, (struct sockaddr *)&ad, ad_length);
+    memset(&skaddr, 0, sizeof(skaddr));
+    skaddr.sin_family = AF_INET;
+    skaddr.sin_addr.s_addr = INADDR_ANY;
+    skaddr.sin_port = htons(12345);
+    bind(sckt, (struct sockaddr *)&skaddr, skaddr_length);
 
     // then listen
-    listen(ss, 5);
+    listen(sckt, 0);
     printf("Server init complete\n");
+
+    char s[100];
+
+//----------------------------------STANDBY FOR CONNECTION----------------------------------
     while (1) {
         // an incoming connection
-        cli = accept(ss, (struct sockaddr *)&ad, &ad_length);
+        cli = accept(sckt, (struct sockaddr *)&skaddr, &skaddr_length);
         printf("client %d connected\n",cli);
 
-        inet_ntop(AF_INET, &(ad.sin_addr), so, sizeof(so));
-        printf("server: got connection from %s\n", so);
+        inet_ntop(AF_INET, &(skaddr.sin_addr), cli_ip, sizeof(cli_ip));
+        printf("server: got connection from %s\n", cli_ip);
 
         // create thread to send from client
         pid_write = fork();
-        
+
 
         if (pid_write == 0) {
             // I'm the son, I'll serve send to this client
@@ -48,8 +52,6 @@ int main() {
                 fgets(s, 95, stdin);
                 int numwrite = write(cli, s, strlen(s) + 1);
             }
-
-            
         } else {
             // If the father, create thread to receive from client
             pid_read = fork();
