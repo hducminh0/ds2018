@@ -7,6 +7,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{spverbatim}
+\usepackage{float}
 \title{Report 6 Gluster}
 \author{Group 2}
 % \author{Nguyen Vu Hung}
@@ -54,7 +55,7 @@
         \end{spverbatim}
         \\Number of bricks is not a multiple of replica count <int>. For example\\
          \textbf{\small sudo gluster volume create test replica 2 transport tcp 
-         192.168.0.160:/home/hung/gluster/test 192.168.0.175/home/lezardvaleth97/gluster/test force}
+         192.168.0.160:/home/hung/gluster/test 192.168.0.175:/home/lezardvaleth97/gluster/test force}
         \\Start the volume
         \begin{verbatim}
             sudo gluster volume start <volume name>
@@ -67,10 +68,10 @@
         \end{verbatim}
         Create a directory to mount glusterfs flies to client (use mkdir) then mount
         \begin{verbatim}
-            mount -t glusterfs <host ip address>:/<volume name> <directory>
-            mount -t glusterfs 192.168.0.160:/test /home/hung/glusterfs
+            sudo mount -t glusterfs <ip address>:/<volume name> <directory>
+            sudo mount -t glusterfs 192.168.0.160:/test /glusterfs
         \end{verbatim}
-        u can check if the system i mounted or not by
+        u can check if the system if mounted or not by
         \begin{verbatim}
             df -h
         \end{verbatim}
@@ -81,18 +82,48 @@
         \end{verbatim}
  
     \section{Perform benchmark}
-    To perform benchmark, first we send a brick with large size through gluster.\\
-    The volume top command allows you to view the glusterFS bricks’ performance metrics
-     \begin{spverbatim}
-            sudo gluster volume top test read-perf bs 1000000 count 1 brick 192.168.0.175:/home/lezardvaleth97/gluster/test
-        \end{spverbatim}
-        or we can use
+    To perform benchmark, we use iozone. Firstly, install iozone
         \begin{verbatim}
-            sudo iozone -r 128k -i 0 -i 1 -i 2 -t 24 -s 10G
+            sudo apt install iozone3
         \end{verbatim}
-        Set record size 128Kb, random write/rewrite, read/reread and write/read, set number of threads to 24 and specify the size of test at 10Gb.\\
-        We can see that glusterfs transfer files faster with large size file. The reading speed of glusterfs is also faster than writing spped.
-        Note: We used local area network to test.
+        Then
+        \begin{verbatim}
+            sudo iozone -r 1k -i 0 -i 1 -i 2 -t 4 -s 128M
+        \end{verbatim}
+        Where -r 1k is to set record size 1kB
+        -i 0 is used to test random write/rewrite, -i 1 is used  to test read/reread and -i 2 is used test write/read.\\
+        -t 8 is used to set number of threads to 8 (since I'm using laptop with 8 threads)\\
+        -s 128MB is to used set specify the size of test at 128MB.\\
+        \\
+        Theses are the results
+    \begin{figure}[H]
+        \centering
+       \includegraphics[scale=0.4]{1kB 1 proccesses.png}
+       \caption{record size 1kB with 1 threads}
+    \end{figure}
+     \begin{figure}[H]
+        \centering
+       \includegraphics[scale=0.4]{1kB 8 proccesses.png}
+       \caption{record size 1kB with 8 threads}
+    \end{figure}
+     \begin{figure}[H]
+        \centering
+       \includegraphics[scale=0.4]{1024kB 1 proccesses.png}
+       \caption{record size 1028kB with 1 threads}
+    \end{figure}
+     \begin{figure}[H]
+        \centering
+       \includegraphics[scale=0.4]{1024kB 4 proccesses.png}
+       \caption{record size 1024kB with 4 threads}
+    \end{figure}
+     \begin{figure}[H]
+        \centering
+       \includegraphics[scale=0.4]{1024kB 8 proccesses.png}
+       \caption{record size 1024kB with 8 threads}
+    \end{figure}
+        We can see that glusterfs reads and writes faster with files with large size.\\
+        The more threads, the slower it reads/writes. The reading speed of glusterfs is also faster than writing speed.
+        \\ Note: We used local area network to test.
         
     \section{Who does what}
 Nguyen Vu Hung did and wrote the report
