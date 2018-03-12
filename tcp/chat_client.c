@@ -58,6 +58,7 @@ int main(int argc, char* argv[]) {
             printf("Login success");
             printf("Connecting to peer...");
             // Connect to peer base on list given
+            break
         }
     }
         // send some data to server
