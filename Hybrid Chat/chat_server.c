@@ -8,11 +8,6 @@
 #include <signal.h>
 #include <netinet/in.h>
 
-void *get_in_addr(struct sockaddr *ad)
-{
-    return &(((struct sockaddr_in*)ad)->sin_addr);
-}
-
 int main() {
     int ss, cli, pid_write, pid_read;
     struct sockaddr_in ad;
@@ -38,7 +33,7 @@ int main() {
         cli = accept(ss, (struct sockaddr *)&ad, &ad_length);
         printf("client %d connected\n",cli);
 
-        inet_ntop(AF_INET, get_in_addr((struct sockaddr *)&ad), so, sizeof(so));
+        inet_ntop(AF_INET, &(ad.sin_addr), so, sizeof(so));
         printf("server: got connection from %s\n", so);
 
         // create thread to send from client
