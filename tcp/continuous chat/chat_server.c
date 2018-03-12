@@ -6,11 +6,18 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <signal.h>
+#include <netinet/in.h>
+
+void *get_in_addr(struct sockaddr *ad)
+{
+    return &(((struct sockaddr_in*)ad)->sin_addr);
+}
 
 int main() {
     int ss, cli, pid_write, pid_read;
     struct sockaddr_in ad;
     char s[100];
+    char so[100];
     socklen_t ad_length = sizeof(ad);
 
     // create the socket
@@ -24,15 +31,20 @@ int main() {
     bind(ss, (struct sockaddr *)&ad, ad_length);
 
     // then listen
-    listen(ss, 0);
+    listen(ss, 5);
     printf("Server init complete\n");
     while (1) {
         // an incoming connection
         cli = accept(ss, (struct sockaddr *)&ad, &ad_length);
         printf("client %d connected\n",cli);
 
+        inet_ntop(AF_INET, get_in_addr((struct sockaddr *)&ad), so, sizeof(so));
+        printf("server: got connection from %s\n", so);
+
         // create thread to send from client
         pid_write = fork();
+        
+
         if (pid_write == 0) {
             // I'm the son, I'll serve send to this client
             while (1) {
@@ -78,3 +90,7 @@ int main() {
     close(cli);
     return 0;
 }
+
+
+
+
