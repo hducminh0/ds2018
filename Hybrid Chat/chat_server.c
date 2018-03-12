@@ -29,7 +29,7 @@ int main() {
     listen(mysocket, 0);
     printf("Server init complete\n");
 
-    char s[100];
+    char mess[100];
 
 //----------------------------------STANDBY FOR CONNECTION----------------------------------
     while (1) {
@@ -40,51 +40,83 @@ int main() {
         inet_ntop(AF_INET, &(socket_address.sin_addr), cli_ip, sizeof(cli_ip));
         printf("server: got connection from %s\n", cli_ip);
 
-        // create thread to send from client
-        pid_write = fork();
+        // create process to serve this client
+        pid_client = fork()
 
+        if (pid_client == 0)
+        {
+            // I'm the son, I'll serve this client
 
-        if (pid_write == 0) {
-            // I'm the son, I'll serve send to this client
+            // do login checking, searching, trading info
+            // bla bla bla
+
+            // after doing stuff, just put this checking client status here
             while (1) {
-                // now it's my (server) turn
-                // keep read mess and send to client
-                fgets(s, 95, stdin);
-                int numwrite = write(cli, s, strlen(s) + 1);
-            }
-        } else {
-            // If the father, create thread to receive from client
-            pid_read = fork();
-            if (pid_read == 0)
-            {   
-                // I'm the son, I'll serve receive from this client
-                // but I have the writing thread PID from father
-                while (1) {
-                    // I wait and read message from client
-                    int numread = read(cli, s, sizeof(s));
-                    if (numread != 0)
-                    {
-                        // read success, print mess
-                        printf("client %d says: %s\n",cli,s);    
-                    } else {
-                        // read fail, disconnected, kill the writing thread.
-                        printf("client %d disconnected\n", cli);
-                        kill(pid_write,SIGKILL);
-                        // break out to close socket and end reading thread.
-                        break;
-                    }
-                    
+                // I wait and read message from client
+                int numread = read(cli, mess, sizeof(mess));
+                if (numread != 0)
+                {
+                    // read success, print mess
+                    printf("client %d says: %s\n",cli,mess);    
+                } else {
+                    // read fail, client disconnected.
+                    printf("client %d disconnected\n", cli);
+                    // break out to close socket and end reading thread.
+                    break;
                 }
-                close(cli);
-                return 0;
-            } else {
-                // I'm the father, continue the loop to accept more clients
-                continue;    
             }
-        }   
+            close(cli);
+            return 0;
+
+        } else {
+            // I'm the father, I continue to accept more client
+            continue;
+        }
+
+        /*
+        // // create process to send from server to client
+        // pid_write = fork();
+
+
+        // if (pid_write == 0) {
+        //     // I'm the son, I'll serve send to this client
+        //     while (1) {
+        //         // now it's my (server) turn
+        //         // keep read mess and send to client
+        //         fgets(mess, 95, stdin);
+        //         int numwrite = write(cli, mess, strlen(mess) + 1);
+        //     }
+        // } else {
+        //     // If the father, create process to receive from client
+        //     pid_read = fork();
+        //     if (pid_read == 0)
+        //     {   
+        //         // I'm the son, I'll serve receive from this client
+        //         // but I have the writing process PID from father
+        //         while (1) {
+        //             // I wait and read message from client
+        //             int numread = read(cli, mess, sizeof(mess));
+        //             if (numread != 0)
+        //             {
+        //                 // read success, print mess
+        //                 printf("client %d says: %s\n",cli,mess);    
+        //             } else {
+        //                 // read fail, disconnected, kill the writing thread.
+        //                 printf("client %d disconnected\n", cli);
+        //                 kill(pid_write,SIGKILL);
+        //                 // break out to close socket and end reading thread.
+        //                 break;
+        //             }
+        //         }
+        //         close(cli);
+        //         return 0;
+        //     } else {
+        //         // I'm the father, continue the loop to accept more clients
+        //         continue;    
+        //     }
+        // }   
+        */
     }
-    // disconnect
-    close(cli);
     return 0;
 }
 
