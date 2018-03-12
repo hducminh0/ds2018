@@ -29,9 +29,39 @@ int main(int argc, char* argv[]) {
 
     while (1) {
         // after connected, it's client turn to chat
-
+        read(serv, s, sizeof(s));       // read response message from the server
+        // Verify the response to know what to do 
+        if (strcmp(s, "Please enter username") == 0){
+            printf("Server connected");
+            printf("Please enter username");
+            scanf("%s", s);
+            pfile = fopen(s, "rb");         
+            write(serv, s, strlen(s) + 1);  // send username to server
+        }
+        else if (strcmp(s, "Please enter password") == 0){
+            printf("Please enter password");
+            scanf("%s", s);
+            pfile = fopen(s, "rb");         
+            write(serv, s, strlen(s) + 1);
+        }  // send password to server
+        else if (strcmp(s, "Wrong password") == 0){
+            printf("Wrong password. Please enter password again");
+            scanf("%s", s);
+            pfile = fopen(s, "rb");         
+            write(serv, s, strlen(s) + 1);
+        }else if (strcmp(s, "No username") == 0){
+            printf("Username is not registered. Please enter user name again");
+            scanf("%s", s);
+            pfile = fopen(s, "rb");         
+            write(serv, s, strlen(s) + 1);
+        }else if (strcmp(s, "Login success") == 0){
+            printf("Login success");
+            printf("Connecting to peer...");
+            // Connect to peer base on list given
+        }
+    }
         // send some data to server
-        printf("client>");
+        //printf("client>");
         scanf("%s", s);
         write(serv, s, strlen(s) + 1);
 
