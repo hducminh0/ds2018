@@ -29,6 +29,7 @@ int main(int argc, char* argv[]) {
 
     while (1) {
         // after connected, it's client turn to chat
+        printf("%d\n", ad.sin_addr);
 
         // send some data to server
         printf("client>");
