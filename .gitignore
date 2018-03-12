@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+/Labwork 4/JavaApplication1/nbproject/private/
+/Labwork 4/JavaApplication1/build/
+/Labwork 4/WordCount/nbproject/private/
+/Labwork 4/WordCounter/nbproject/private/
+/Labwork 4/WordCounter/build/
