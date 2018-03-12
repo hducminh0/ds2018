@@ -10,23 +10,23 @@
 
 int main() {
 //----------------------------------INIT SERVER----------------------------------
-    int sckt, cli, pid_write, pid_read;
-    struct sockaddr_in skaddr;
+    int mysocket, cli, pid_write, pid_read;
+    struct sockaddr_in socket_address;
     char cli_ip[100];
-    socklen_t skaddr_length = sizeof(skaddr);
+    socklen_t skaddr_length = sizeof(socket_address);
 
     // create the socket
-    sckt = socket(AF_INET, SOCK_STREAM, 0);
+    mysocket = socket(AF_INET, SOCK_STREAM, 0);
 
     // bind the socket to port 12345
-    memset(&skaddr, 0, sizeof(skaddr));
-    skaddr.sin_family = AF_INET;
-    skaddr.sin_addr.s_addr = INADDR_ANY;
-    skaddr.sin_port = htons(12345);
-    bind(sckt, (struct sockaddr *)&skaddr, skaddr_length);
+    memset(&socket_address, 0, sizeof(socket_address));
+    socket_address.sin_family = AF_INET;
+    socket_address.sin_addr.s_addr = INADDR_ANY;
+    socket_address.sin_port = htons(12345);
+    bind(mysocket, (struct sockaddr *)&socket_address, skaddr_length);
 
     // then listen
-    listen(sckt, 0);
+    listen(mysocket, 0);
     printf("Server init complete\n");
 
     char s[100];
@@ -34,10 +34,10 @@ int main() {
 //----------------------------------STANDBY FOR CONNECTION----------------------------------
     while (1) {
         // an incoming connection
-        cli = accept(sckt, (struct sockaddr *)&skaddr, &skaddr_length);
+        cli = accept(mysocket, (struct sockaddr *)&socket_address, &skaddr_length);
         printf("client %d connected\n",cli);
 
-        inet_ntop(AF_INET, &(skaddr.sin_addr), cli_ip, sizeof(cli_ip));
+        inet_ntop(AF_INET, &(socket_address.sin_addr), cli_ip, sizeof(cli_ip));
         printf("server: got connection from %s\n", cli_ip);
 
         // create thread to send from client

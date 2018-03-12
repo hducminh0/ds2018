@@ -8,151 +8,150 @@
 #include <signal.h>
 #include <netinet/in.h>
 
-void *get_in_addr(struct sockaddr *ad)
+void *get_in_addr(struct sockaddr *sv_address)
 {
-    return &(((struct sockaddr_in*)ad)->sin_addr);
+    return &(((struct sockaddr_in*)sv_address)->sin_addr);
 }
 
 int main(int argc, char* argv[]) {
-    int so,pid_write,pid_read;
-    char s[100];
-    struct sockaddr_in ad;
+//----------------------------------INIT CLIENT Connection to SERVER----------------------------------
+    int serv;
+    struct sockaddr_in sv_address;
 
-    socklen_t ad_length = sizeof(ad);
-    struct hostent *hep, *hepcli;
+    socklen_t ad_length = sizeof(sv_address);
+    struct hostent *hostend_ip;
 
     // create socket
-    int serv = socket(AF_INET, SOCK_STREAM, 0);
+    serv = socket(AF_INET, SOCK_STREAM, 0);
 
     // init address
-    hep = gethostbyname(argv[1]);
-    memset(&ad, 0, sizeof(ad));
-    ad.sin_family = AF_INET;
-    ad.sin_addr = *(struct in_addr *)hep->h_addr_list[0];
-    ad.sin_port = htons(12345);
+    hostend_ip = gethostbyname(argv[1]);
+    memset(&sv_address, 0, sizeof(sv_address));
+    sv_address.sin_family = AF_INET;
+    sv_address.sin_addr = *(struct in_addr *)hostend_ip->h_addr_list[0];
+    sv_address.sin_port = htons(12345);
 
     // connect to server
-    connect(serv, (struct sockaddr *)&ad, ad_length);
+    connect(serv, (struct sockaddr *)&sv_address, ad_length);
     // after connected, make client thread to send mess to server
+
+
+//----------------------------------INIT CLIENT wait for incomming peer----------------------------------    
+
+    int mysocket,peer,pid_write,pid_read;
+    struct sockaddr_in incomming_addr;
+    char peer_ip[100];
+    socklen_t inaddr_length = sizeof(incomming_addr);
+    
+    // create the socket
+    mysocket = socket(AF_INET, SOCK_STREAM, 0);
+
+    // bind the socket to port 12355 (10 port from 12345)
+    memset(&incomming_addr, 0, sizeof(incomming_addr));
+    incomming_addr.sin_family = AF_INET;    
+    incomming_addr.sin_addr.s_addr = INADDR_ANY;
+    incomming_addr.sin_port = htons(12355);
+    bind(mysocket, (struct sockaddr *)&incomming_addr, inaddr_length);
+
+    // then listen
+    listen(mysocket, 5);
+    printf("Client as server initilize successfully\n");
+    
+    while (1) {
+        peer = accept(mysocket, (struct sockaddr *)&incomming_addr, &inaddr_length);
+        printf("peer %d connected\n",peer);    
+
+        inet_ntop(AF_INET, &(incomming_addr.sin_addr), peer_ip, sizeof(peer_ip));
+        printf("Me: got connection from %s\n", peer_ip);
+    }
+
+
+
+    // pid_write = fork();
+
+    // inet_ntop(AF_INET, get_in_addr((struct sockaddr *)&incomming_addr), s1, sizeof(s1));
+    // printf("client as server: got connection from %s\n", so);
+
+    // if (pid_write == 0) {
+    //     // I'm the son, I'll serve send to this client
+    //     while (1) {
+    //         // now it's my (server) turn
+    //         // keep read mess and send to client
+    //         fgets(s, 95, stdin);
+    //         int numwrite = write(peer, s, strlen(s) + 1);
+    //     }
+
+        
+    // } else {
+    //     // If the father, create thread to receive from client
+    //     pid_read = fork();
+    //     if (pid_read == 0)
+    //     {   
+    //         // I'm the son, I'll serve receive from this client
+    //         // but I have the writing thread PID from father
+    //         while (1) {
+    //             // I wait and read message from client
+    //             int numread = read(peer, s, sizeof(s));
+    //             if (numread != 0)
+    //             {
+    //                 // read success, print mess
+    //                 printf("client %d says: %s\n",peer,s);    
+    //             } else {
+    //                 // read fail, disconnected, kill the writing thread.
+    //                 printf("client %d disconnected\n", peer);
+    //                 kill(pid_write,SIGKILL);
+    //                 // break out to close socket and end reading thread.
+    //                 break;
+    //             }
+                
+    //         }
+    //         close(peer);
+    //         return 0;
+    //     } else {
+    //         // I'm the father, continue the loop to accept more clients
+    //         continue;    
+    //     }
+    // } 
+    // }  
+
+
+  
+    
     
 
 
+    // pid_write = fork();
 
-    int clisock,cli_as_server,cli_as_cli;
-    struct sockaddr_in cliad;
-    char s1[100];
-
+    // if (pid_write == 0)
+    // {   
+    // // I'm the son, I'm keep reading and sending mess
+    //     while (1) {
+    //         // read line and send data to server
+    //         fgets(s, 95, stdin);
+    //         int numwrite = write, s, strlen(s) + 1);
+    //     }
     
-    socklen_t cliad_length = sizeof(cliad);
-    memset(&cliad, 0, sizeof(cliad));
+    // }
+    // // I'm the father, I handle reading
+    // while(1){
+    //     // keep reading
+    //     int numread = read, s, sizeof(s));
+    //     if (numread != 0)
+    //     {
+    //         // if numread > 0, read success, print mess
+    //         printf("server says: %s\n", s);    
+    //     } else {
+    //         // read fail, disconnect
+    //         printf("server disconnected\n");
+    //         // kill the son writing thread
+    //         kill(pid_write,SIGKILL);
+    //         // break to end
+    //         break;
+    //     }
     
-
-        // create the socket
-        cli_as_server = socket(AF_INET, SOCK_STREAM, 0);
-
-        // bind the socket to port 12345
-        cliad.sin_family = AF_INET;    
-        cliad.sin_addr.s_addr = INADDR_ANY;
-        cliad.sin_port = htons(5555);
-        bind(cli_as_server, (struct sockaddr *)&cliad, cliad_length);
-
-
-        // then listen
-        listen(cli_as_server, 5);
-        printf("Client as server initilize successfully\n");
-
-        clisock = accept(cli_as_server, (struct sockaddr *)&cliad, &cliad_length);
-        printf("client %d connected\n",clisock);
-
+    // }
         
 
-
-
-        // pid_write = fork();
-
-        // inet_ntop(AF_INET, get_in_addr((struct sockaddr *)&cliad), s1, sizeof(s1));
-        // printf("client as server: got connection from %s\n", so);
-
-        // if (pid_write == 0) {
-        //     // I'm the son, I'll serve send to this client
-        //     while (1) {
-        //         // now it's my (server) turn
-        //         // keep read mess and send to client
-        //         fgets(s, 95, stdin);
-        //         int numwrite = write(clisock, s, strlen(s) + 1);
-        //     }
-
-            
-        // } else {
-        //     // If the father, create thread to receive from client
-        //     pid_read = fork();
-        //     if (pid_read == 0)
-        //     {   
-        //         // I'm the son, I'll serve receive from this client
-        //         // but I have the writing thread PID from father
-        //         while (1) {
-        //             // I wait and read message from client
-        //             int numread = read(clisock, s, sizeof(s));
-        //             if (numread != 0)
-        //             {
-        //                 // read success, print mess
-        //                 printf("client %d says: %s\n",clisock,s);    
-        //             } else {
-        //                 // read fail, disconnected, kill the writing thread.
-        //                 printf("client %d disconnected\n", clisock);
-        //                 kill(pid_write,SIGKILL);
-        //                 // break out to close socket and end reading thread.
-        //                 break;
-        //             }
-                    
-        //         }
-        //         close(clisock);
-        //         return 0;
-        //     } else {
-        //         // I'm the father, continue the loop to accept more clients
-        //         continue;    
-        //     }
-        // } 
-        // }  
-
-
-      
-        
-        
-
-
-        // pid_write = fork();
-    
-        // if (pid_write == 0)
-        // {   
-        // // I'm the son, I'm keep reading and sending mess
-        //     while (1) {
-        //         // read line and send data to server
-        //         fgets(s, 95, stdin);
-        //         int numwrite = write(cli_as_cli, s, strlen(s) + 1);
-        //     }
-        
-        // }
-        // // I'm the father, I handle reading
-        // while(1){
-        //     // keep reading
-        //     int numread = read(cli_as_cli, s, sizeof(s));
-        //     if (numread != 0)
-        //     {
-        //         // if numread > 0, read success, print mess
-        //         printf("server says: %s\n", s);    
-        //     } else {
-        //         // read fail, disconnect
-        //         printf("server disconnected\n");
-        //         // kill the son writing thread
-        //         kill(pid_write,SIGKILL);
-        //         // break to end
-        //         break;
-        //     }
-        
-        // }
-        
-
-    // close(cli_as_cli);
+    // close);
     // return 0;
 }
