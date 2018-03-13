@@ -59,12 +59,24 @@ int main() {
                 strcpy(mess, "Please enter username");
                 write(cli, mess, strlen(mess) + 1);
                 read(cli, mess, sizeof(mess));
+                if (numread == 0){
+                    // read fail, client disconnected.
+                    printf("client %d disconnected\n", cli);
+                    close(cli);
+                    return 0;
+                }
                 if (strcmp(mess, "NLag") == 0){ //Compare to user name in database
                     //Send message to ask for password
                     strcpy(mess, "Please enter password"); 
                     write(cli, mess, strlen(mess) + 1); 
                     while(1){
                         read(cli, mess, sizeof(mess));
+                        if (numread == 0){
+                            // read fail, client disconnected.
+                            printf("client %d disconnected\n", cli);
+                            close(cli);
+                            return 0;
+                        }
                         if (strcmp(mess, "123456") == 0){ //password 123456
                             strcpy(mess, "Login success"); 
                             write(cli, mess, strlen(mess) + 1);
@@ -72,7 +84,7 @@ int main() {
                             break;
                         }
                         else{
-                            strcpy(mess, "wrong password"); 
+                            strcpy(mess, "Wrong password"); 
                             write(cli, mess, strlen(mess) + 1);
                        }
                     }
