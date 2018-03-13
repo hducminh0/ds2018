@@ -7,9 +7,17 @@
 #include <netdb.h>
 #include <signal.h>
 #include <netinet/in.h>
+#include <sys/mman.h>
+
+//shared data between process
+static unsigned char *online_user; 
+static int num_of_user = 0;
 
 int main() {
 //----------------------------------INIT SERVER----------------------------------
+    online_user = (unsigned char*) mmap(NULL, 100, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    char mess[100];
+
     int mysocket, cli, pid_client;
     struct sockaddr_in socket_address;
     char cli_ip[100];
@@ -29,7 +37,7 @@ int main() {
     listen(mysocket, 0);
     printf("Server init complete\n");
 
-    char mess[100];
+    
 
 //----------------------------------STANDBY FOR CONNECTION----------------------------------
     while (1) {
@@ -41,14 +49,39 @@ int main() {
         printf("server: got connection from %s\n", cli_ip);
 
         // create process to serve this client
-        pid_client = fork()
+        pid_client = fork();
 
         if (pid_client == 0)
         {
             // I'm the son, I'll serve this client
-
-            // do login checking, searching, trading info
-            // bla bla bla
+            while (1) {
+                // do login checking, searching, trading info
+                strcpy(mess, "Please enter username");
+                write(cli, mess, strlen(mess) + 1);
+                read(cli, mess, sizeof(mess));
+                if (strcmp(mess, "NLag") == 0){ //Compare to user name in database
+                    //Send message to ask for password
+                    strcpy(mess, "Please enter password"); 
+                    write(cli, mess, strlen(mess) + 1); 
+                    while(1){
+                        read(cli, mess, sizeof(mess));
+                        if (strcmp(mess, "123456") == 0){ //password 123456
+                            strcpy(mess, "Login success"); 
+                            write(cli, mess, strlen(mess) + 1);
+                            // then send list of IP
+                            break;
+                        }
+                        else{
+                            strcpy(mess, "wrong password"); 
+                            write(cli, mess, strlen(mess) + 1);
+                       }
+                    }
+                }
+                else{
+                    strcpy(mess, "No username"); 
+                    write(cli, mess, strlen(mess) + 1);
+                }
+            }
 
             // after doing stuff, just put this checking client status here
             while (1) {
@@ -57,7 +90,7 @@ int main() {
                 if (numread != 0)
                 {
                     // read success, print mess
-                    printf("client %d says: %s\n",cli,mess);    
+                    printf("client %d says: %mess\n",cli,mess);    
                 } else {
                     // read fail, client disconnected.
                     printf("client %d disconnected\n", cli);
@@ -81,7 +114,7 @@ int main() {
         // if (pid_write == 0) {
         //     // I'm the son, I'll serve send to this client
         //     while (1) {
-        //         // now it's my (server) turn
+        //         // now it'mess my (server) turn
         //         // keep read mess and send to client
         //         fgets(mess, 95, stdin);
         //         int numwrite = write(cli, mess, strlen(mess) + 1);
@@ -99,7 +132,7 @@ int main() {
         //             if (numread != 0)
         //             {
         //                 // read success, print mess
-        //                 printf("client %d says: %s\n",cli,mess);    
+        //                 printf("client %d says: %mess\n",cli,mess);    
         //             } else {
         //                 // read fail, disconnected, kill the writing thread.
         //                 printf("client %d disconnected\n", cli);
