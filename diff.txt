@@ -1,0 +1,21 @@
+diff --git a/Hybrid Chat/chat_server.c b/Hybrid Chat/chat_server.c
+index 523b641..efef3fa 100644
+--- a/Hybrid Chat/chat_server.c	
++++ b/Hybrid Chat/chat_server.c	
+@@ -83,7 +83,7 @@ int main() {
+                         if (strcmp(mess, "123456") == 0){ //password 123456
+                             strcpy(mess, "Login success"); 
+                             write(cli, mess, strlen(mess) + 1);
+-                            printf("username %s has logged in.", username);
++                            printf("username %s has logged in.\n", username);
+                             // save IP to database
+                             // then send list of IP
+                             break;
+@@ -111,6 +111,7 @@ int main() {
+                 } else {
+                     // read fail, client disconnected.
+                     printf("client %d disconnected\n", cli);
++                    printf("username %s has disconnected.\n", username);
+                     // break out to close socket and end reading thread.
+                     break;
+                 }
