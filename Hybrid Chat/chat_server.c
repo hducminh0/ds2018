@@ -53,11 +53,12 @@ int main() {
 
         if (pid_client == 0)
         {
+            strcpy(mess, "Please enter username");
+            write(cli, mess, strlen(mess) + 1);
             // I'm the son, I'll serve this client
             while (1) {
                 // do login checking, searching, trading info
-                strcpy(mess, "Please enter username");
-                write(cli, mess, strlen(mess) + 1);
+                
                 numread = read(cli, mess, sizeof(mess));
                 if (numread == 0){
                     // read fail, client disconnected.
