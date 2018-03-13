@@ -81,10 +81,9 @@ int main() {
                             return 0;
                         }
                         if (strcmp(mess, "123456") == 0){ //password 123456
-                            printf
                             strcpy(mess, "Login success"); 
                             write(cli, mess, strlen(mess) + 1);
-                            printf("username %s has logged in.", username)
+                            printf("username %s has logged in.", username);
                             // save IP to database
                             // then send list of IP
                             break;
