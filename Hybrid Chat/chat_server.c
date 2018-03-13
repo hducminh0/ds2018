@@ -18,7 +18,7 @@ int main() {
     online_user = (unsigned char*) mmap(NULL, 100, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     char mess[100];
 
-    int mysocket, cli, pid_client;
+    int mysocket, cli, pid_client, numread;
     struct sockaddr_in socket_address;
     char cli_ip[100];
     socklen_t skaddr_length = sizeof(socket_address);
@@ -58,7 +58,7 @@ int main() {
                 // do login checking, searching, trading info
                 strcpy(mess, "Please enter username");
                 write(cli, mess, strlen(mess) + 1);
-                read(cli, mess, sizeof(mess));
+                numread = read(cli, mess, sizeof(mess));
                 if (numread == 0){
                     // read fail, client disconnected.
                     printf("client %d disconnected\n", cli);
@@ -70,7 +70,7 @@ int main() {
                     strcpy(mess, "Please enter password"); 
                     write(cli, mess, strlen(mess) + 1); 
                     while(1){
-                        read(cli, mess, sizeof(mess));
+                        numread = read(cli, mess, sizeof(mess));
                         if (numread == 0){
                             // read fail, client disconnected.
                             printf("client %d disconnected\n", cli);
@@ -98,7 +98,7 @@ int main() {
             // after doing stuff, just put this checking client status here
             while (1) {
                 // I wait and read message from client
-                int numread = read(cli, mess, sizeof(mess));
+                numread = read(cli, mess, sizeof(mess));
                 if (numread != 0)
                 {
                     // read success, print mess
