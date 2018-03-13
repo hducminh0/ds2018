@@ -67,6 +67,8 @@ int main() {
                     return 0;
                 }
                 if (strcmp(mess, "NLag") == 0){ //Compare to user name in database
+                    char username[100];
+                    strcpy(username, mess);
                     //Send message to ask for password
                     strcpy(mess, "Please enter password"); 
                     write(cli, mess, strlen(mess) + 1); 
@@ -79,8 +81,11 @@ int main() {
                             return 0;
                         }
                         if (strcmp(mess, "123456") == 0){ //password 123456
+                            printf
                             strcpy(mess, "Login success"); 
                             write(cli, mess, strlen(mess) + 1);
+                            printf("username %s has logged in.", username)
+                            // save IP to database
                             // then send list of IP
                             break;
                         }
