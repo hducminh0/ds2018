@@ -90,7 +90,7 @@ int main() {
                 if (numread != 0)
                 {
                     // read success, print mess
-                    printf("client %d says: %mess\n",cli,mess);    
+                    printf("client %d says: %s\n",cli,mess);    
                 } else {
                     // read fail, client disconnected.
                     printf("client %d disconnected\n", cli);
