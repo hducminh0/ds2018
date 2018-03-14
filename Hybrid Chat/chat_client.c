@@ -46,31 +46,42 @@ int main(int argc, char* argv[]) {
             scanf("%s", mess);
             write(serv, mess, strlen(mess) + 1);  // send username to server
         }
-        else if (strcmp(mess, "Please enter password") == 0){
-            printf("Please enter password: ");
-            scanf("%s", mess);
-            // should encrypt password but nah, just do it later
-            write(serv, mess, strlen(mess) + 1);
-        }  // send password to server
-        else if (strcmp(mess, "Wrong password") == 0){
-            printf("Wrong password. Please enter password again. \n");
-            scanf("%s", mess);
-            // encrypt pass can wait to tomorrow
-            write(serv, mess, strlen(mess) + 1);
-        }else if (strcmp(mess, "No username") == 0){
+        else if (strcmp(mess, "No username") == 0){
             printf("Username is not registered. Please enter user name again. \n");
             scanf("%s", mess);       
             write(serv, mess, strlen(mess) + 1);
         }else if (strcmp(mess, "Login success") == 0){
-            printf("Login success !\n");
-            //printf("Connecting to peer...");
-            // Connect to peer base on list given
+            printf("Access success !\n");
             break;
         }else {
             // received some wrong mess from server, give 0 f*ck and continue
+            printf("something wrong at login.\n");
             continue;
         }
     }
+
+    // wait for incumming info about user that i find
+    while (1) {
+        // after connected, read instruction from server 
+        read(serv, mess, sizeof(mess));       // read response message from the server
+        if (strcmp(mess,"Input username") == 0)
+        {
+            printf("Input username to find.\n");
+            scanf("%s", mess);
+            write(serv, mess, strlen(mess) + 1);     
+        } else if (strcmp(mess,"User is not online or not exist") == 0)
+        {
+            printf("%s\n", mess);
+            printf("Input another username.\n");
+            scanf("%s", mess);
+            write(serv, mess, strlen(mess) + 1);
+        } else {
+            printf("User is in room %s\n", mess);
+            break;
+        }
+    }
+
+
 
 
 //----------------------------------INIT CLIENT wait for incomming peer----------------------------------    

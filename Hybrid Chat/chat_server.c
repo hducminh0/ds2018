@@ -8,14 +8,213 @@
 #include <signal.h>
 #include <netinet/in.h>
 #include <sys/mman.h>
+#include <my_global.h>
+#include <mysql.h>
 
-//shared data between process
-static unsigned char *online_user; 
-static int num_of_user = 0;
+void finish_with_error(MYSQL *con)
+{
+  fprintf(stderr, "%s\n", mysql_error(con));
+  mysql_close(con);
+  exit(1);        
+}
+
+int finduser(char username[100]){
+    char query[100]; 
+    sprintf(query,"SELECT Name FROM Users WHERE Name ='%s'",username);
+
+    MYSQL *con = mysql_init(NULL);
+
+    if (con == NULL)
+    {
+      fprintf(stderr, "mysql_init() failed\n");
+      exit(1);
+    }  
+    // connect to database
+    if (mysql_real_connect(con, "localhost", "hungson", "Son_123*", 
+          "userdata", 0, NULL, 0) == NULL) 
+    {
+      finish_with_error(con);
+    }    
+    // query
+    if (mysql_query(con, query)) 
+    {
+      finish_with_error(con);
+    }
+    // store the result after query
+    MYSQL_RES *result = mysql_store_result(con);
+
+    if (result == NULL) 
+    {
+      finish_with_error(con);
+    }
+    // get the numb of columns in the table
+    int num_fields = mysql_num_fields(result);
+
+    MYSQL_ROW row;
+
+    //fetch the rows
+    if ((row = mysql_fetch_row(result))) 
+    { 
+        return 1;
+    } else {
+        return 0;
+    }
+
+    mysql_free_result(result);
+    mysql_close(con);
+}
+
+void save_user_ip(char *username, char *ip) {
+    char query[100]; 
+    sprintf(query,"UPDATE Users SET IP ='%s', Status = '1' WHERE Name ='%s'",ip,username);
+
+    MYSQL *con = mysql_init(NULL);
+
+    if (con == NULL)
+    {
+      fprintf(stderr, "mysql_init() failed\n");
+      exit(1);
+    }  
+    // connect to database
+    if (mysql_real_connect(con, "localhost", "hungson", "Son_123*", 
+          "userdata", 0, NULL, 0) == NULL) 
+    {
+      finish_with_error(con);
+    }    
+    // query
+    if (mysql_query(con, query)) 
+    {
+      finish_with_error(con);
+    }
+    
+    mysql_close(con);
+}
+
+int getroom(char *usertofind) {
+    char query[100]; 
+    sprintf(query,"SELECT Room FROM Users WHERE Name ='%s' AND Status = '1'",usertofind);
+    char iptosend[16];
+    MYSQL *con = mysql_init(NULL);
+
+    if (con == NULL)
+    {
+      fprintf(stderr, "mysql_init() failed\n");
+      exit(1);
+    }  
+    // connect to database
+    if (mysql_real_connect(con, "localhost", "hungson", "Son_123*", 
+          "userdata", 0, NULL, 0) == NULL) 
+    {
+      finish_with_error(con);
+    }    
+    // query
+    if (mysql_query(con, query)) 
+    {
+      finish_with_error(con);
+    }
+    // store the result after query
+    MYSQL_RES *result = mysql_store_result(con);
+
+    if (result == NULL) 
+    {
+      finish_with_error(con);
+    }
+    // get the numb of columns in the table
+    int num_fields = mysql_num_fields(result);
+
+    MYSQL_ROW row;
+
+    //fetch the rows
+    if ((row = mysql_fetch_row(result))) 
+    { 
+        return atoi(row[0]);
+    } else {
+        return -1;
+    }
+
+    mysql_free_result(result);
+    mysql_close(con);
+}
+
+void setroom(char *usertofind) {
+    char query[100]; 
+    sprintf(query,"UPDATE Users SET Room = Id WHERE Name ='%s'",username);
+
+    MYSQL *con = mysql_init(NULL);
+
+    if (con == NULL)
+    {
+      fprintf(stderr, "mysql_init() failed\n");
+      exit(1);
+    }  
+    // connect to database
+    if (mysql_real_connect(con, "localhost", "hungson", "Son_123*", 
+          "userdata", 0, NULL, 0) == NULL) 
+    {
+      finish_with_error(con);
+    }    
+    // query
+    if (mysql_query(con, query)) 
+    {
+      finish_with_error(con);
+    }
+    
+    mysql_close(con);
+}
+
+void send_ip_in_room(int room,int cli) {
+    char query[100]; 
+    sprintf(query,"SELECT IP FROM Users WHERE Room ='%d'",room);
+
+    MYSQL *con = mysql_init(NULL);
+
+    if (con == NULL)
+    {
+      fprintf(stderr, "mysql_init() failed\n");
+      exit(1);
+    }  
+    // connect to database
+    if (mysql_real_connect(con, "localhost", "hungson", "Son_123*", 
+          "userdata", 0, NULL, 0) == NULL) 
+    {
+      finish_with_error(con);
+    }    
+    // query
+    if (mysql_query(con, query)) 
+    {
+      finish_with_error(con);
+    }
+    // store the result after query
+    MYSQL_RES *result = mysql_store_result(con);
+
+    if (result == NULL) 
+    {
+      finish_with_error(con);
+    }
+    // get the numb of columns in the table
+    int num_fields = mysql_num_fields(result);
+
+    MYSQL_ROW row;
+
+    char mess[100];
+    //fetch the rows
+    while ((row = mysql_fetch_row(result))) 
+    { 
+        strcpy(mess, row[0]);
+        write(cli, mess, strlen(mess) + 1);
+
+        while (strcmp(mess,'OK')){
+            read(cli, mess, sizeof(mess));       // read response message from the server    
+        }
+        
+    }
+
+    mysql_free_result(result);
+    mysql_close(con);
+}
 
 int main() {
 //----------------------------------INIT SERVER----------------------------------
-    online_user = (unsigned char*) mmap(NULL, 100, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     char mess[100];
 
     int mysocket, cli, pid_client, numread;
@@ -53,12 +252,12 @@ int main() {
 
         if (pid_client == 0)
         {
+            char username[100];
             strcpy(mess, "Please enter username");
             write(cli, mess, strlen(mess) + 1);
             // I'm the son, I'll serve this client
             while (1) {
                 // do login checking, searching, trading info
-                
                 numread = read(cli, mess, sizeof(mess));
                 if (numread == 0){
                     // read fail, client disconnected.
@@ -66,37 +265,45 @@ int main() {
                     close(cli);
                     return 0;
                 }
-                if (strcmp(mess, "NLag") == 0){ //Compare to user name in database
-                    char username[100];
+                if (finduser(mess) == 1){ //Compare to user name in database
                     strcpy(username, mess);
-                    //Send message to ask for password
-                    strcpy(mess, "Please enter password"); 
-                    write(cli, mess, strlen(mess) + 1); 
-                    while(1){
-                        numread = read(cli, mess, sizeof(mess));
-                        if (numread == 0){
-                            // read fail, client disconnected.
-                            printf("client %d disconnected\n", cli);
-                            close(cli);
-                            return 0;
-                        }
-                        if (strcmp(mess, "123456") == 0){ //password 123456
-                            strcpy(mess, "Login success"); 
-                            write(cli, mess, strlen(mess) + 1);
-                            printf("username %s has logged in.\n", username);
-                            // save IP to database
-                            // then send list of IP
-                            break;
-                        }
-                        else{
-                            strcpy(mess, "Wrong password"); 
-                            write(cli, mess, strlen(mess) + 1);
-                       }
-                    }
+                    save_user_ip(username, cli_ip);
+                    strcpy(mess, "Login success"); 
+                    write(cli, mess, strlen(mess) + 1);
+                    break;
                 }
                 else{
                     strcpy(mess, "No username"); 
                     write(cli, mess, strlen(mess) + 1);
+                }
+            }
+
+            //find user to check ip
+            // I wait and read message from client
+            strcpy(mess, "Input username");
+            write(cli, mess, strlen(mess) + 1);
+            int room;
+            while (1) {
+                numread = read(cli, mess, sizeof(mess));
+                if (numread != 0)
+                {
+                    char usertofind[100];
+                    strcpy(usertofind, mess);
+                    //get room , if no room then make room
+                    room = getroom(usertofind);
+                    if (room == -1) {
+                        strcpy(mess, "User is not online or not exist"); 
+                        write(cli, mess, strlen(mess) + 1);
+                    } else {
+                        sprintf(mess,"%d",room);
+                        write(cli, mess, strlen(mess) + 1);
+                    }
+                } else {
+                    // read fail, client disconnected.
+                    printf("client %d disconnected\n", cli);
+                    printf("username %s has disconnected.\n", username);
+                    close(cli);
+                    return 0;
                 }
             }
 
@@ -112,12 +319,11 @@ int main() {
                     // read fail, client disconnected.
                     printf("client %d disconnected\n", cli);
                     printf("username %s has disconnected.\n", username);
-                    // break out to close socket and end reading thread.
-                    break;
+                    close(cli);
+                    return 0;
                 }
             }
-            close(cli);
-            return 0;
+
 
         } else {
             // I'm the father, I continue to accept more client
