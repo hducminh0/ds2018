@@ -1,0 +1,56 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[latin1]{inputenc}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm, headsep=14pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\title{Hybrid centralized and P2P chat}
+\author{Group 2}
+% \author[2]{Hoang Duc Minh, Le Tan Nhat Linh, Luong Hung Son,}
+% \author[3]{ Nguyen Vu Hung, Truong Hai Long}
+\date{January 17, 2018}
+
+\begin{document}
+\maketitle
+  \section{What}
+     Hybrid centralized and peer to peer is a model that combine peer to peer and client-sever models (only one central server ). Centralized server keeps a list of users with their password and IP addresses and required for peers to find each other, call-control and other necessary procedures. This model can be easy to manage, scalable and fast.
+
+    \section{Why}
+    Hybrid model is the combination of half centralized and half distributed. For that property, it allow us to choose some advantages and accept some disadvantages in both kinds.\\ 
+Using centralized authentication server and peer to peer client chat, server can manage user without knowing chat data between client. Client only connect to server to authenticate and receive info about other client in order to make p2p connection. Compare to normal centralized server-client chat system, the server is no longer take responsible for all the data. The drawback of this centralized authentication server is all client have permission to check info of each other.\\ 
+In the p2p client chat, we use a complete graph connection between clients. The advantage of a complete graph model is that when one node is remove from the network, the model is still a complete graph. For that, in case of one client is crash, we won’t need to take any action as the network between other client is still a complete connected network. The disadvantage is the network can be very large and some unstable connection can lead to some clients have messages loss or delayed.
+    \section{How}
+    \begin{itemize}
+    \item Server-client
+    
+    We use socket to create a system to communicate between server and client. The system is described in the figure.
+The server will always maintains a process (father process) waiting to accept clients when clients make connection requests.
+When a connection request is created, the server will fork another process (son process) to maintain connection and communicate with the client. So that the server can serve many clients at once.
+After the connection is accepted, the client-P1 can communicate with server using socket. Server will run a login function.
+First, the server will ask for username and password, if they match with database, login success. The IP of P1 is saved in database with online state.
+P1 will ask for an username. For example, P2, server will check if P2 is in database with online status or not, if Yes then server will send IP of P2 to P1.
+Server will also check if there are any other online user who is connecting to P2, if there are, server will send a IP list of those users for P1. P1 will connect with sent IP consequently. If P1 is first client then nothing is sent.
+If the connection has problem, the clients do not send any signal then it is disconnected automatically.
+    \item Client-client
+    
+    Each peer maintains 2 initial processes, creating connection to the other peers and waiting for other peers to connect to it. After receiving IP of another peer, for example P2, P1 can establish a connection to each one of the peer directly using socket. P1 forks a new process and create a socket connection to P2. If P2 receives a connection from P1, it forks a new process to maintain this connection and sends a confirmation message to P1. When the P2P connection has been established, P1 and P2 can send and receive messages from each other. In the case that P2 is connected with some other peers, P1 also receives the IPs of these peers and connects with them in the same manner. Each peer in a group is connected to all the others in that same group. As a result, all the peer can receive the message from P1 very fast. Moreover, if 1 peer is disconnected, even if it is the server, the others do not need to care about that peer and continue to maintain their connection with each other. The disadvantage of such approach is each peer has to maintain a lot or processes since every socket connection is a different process.
+    \end{itemize}
+    
+    \section{Difficulty}
+    \begin{itemize}
+    \item Peer-to-peer messaging
+        \begin{itemize}
+            \item After connecting to the server, the new-coming peer will connect to all peers which already in the system. Therefore, newcomers will have to handle more and more connections and the workload is definitely heavier.
+            \item At first, we wanted the number of peers connecting to a peer is limited (each peer only connects to 3-4 peers) in order to cut down the workload for each peer. However, after working on several designs, it is difficult to implement our system in that way.
+            \item We somehow still struggle with a problem that after connecting to the server and then having a peer connect to (the new-coming peer acts like a client and our peer now acts like a server (for other peers)), the peer stop running (the error message is “Segmentation fault (core dumped)’’). Probably our implementation creates conflicts between different connections, different sockets and a peer handling multiple connections has not been successfully implemented (can only handle two connections, with the server and with a peer).
+
+        \end{itemize}
+        \item Server-Database
+        
+        We use MySQL in our system, trying to manage all peer’s addresses. Theoretically, it will send a list of already-connected peers in our system to the newcomer and it can connect to all of those peers by parsing and assigning them to the connect() function of TCP/IP. However, working with MySQL is complex so the database was not ready at the time of our presentation.
+    \end{itemize}
+    
+\end{document}
